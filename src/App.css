@@ -1,0 +1,13 @@
+#container {
+  width: 95%;
+  margin-left: 2.5%;
+}
+
+.viz label {
+  width: 100%;
+  padding: 10px;
+}
+
+.viz div {
+  height: 400px;
+}
