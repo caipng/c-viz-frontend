@@ -1,25 +1,23 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import "./App.css";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { EditorView } from "@uiw/react-codemirror";
 import { cpp } from "@codemirror/lang-cpp";
 import JsonView from "react18-json-view";
+import Agenda from "./Agenda";
 import "react18-json-view/src/style.css";
 import cviz from "c-viz";
 import { Runtime } from "c-viz/lib/interpreter";
-import { getErrorMessage } from "./utils";
+import { getErrorMessage, markField } from "./utils";
+import ExternalDeclarations from "./ExternalDeclarations";
+import Stash from "./Stash";
 
 function App() {
-  const [code, setCode] = React.useState(`struct point {
-  int x;
-  float y;
-  char * name;
-} a, b;
-  
-int main() {
-  double PI = 3.14;
-  printf("Hello World");
-  return 0;
-}`);
+  const [code, setCode] = React.useState("");
+  useEffect(() => {
+    fetch("/sample.c")
+      .then((r) => r.text())
+      .then((t) => setCode(t));
+  }, []);
 
   const onChange = React.useCallback(
     (val: React.SetStateAction<string>, viewUpdate: any) => {
@@ -30,7 +28,9 @@ int main() {
 
   const [rt, setRt] = React.useState<undefined | Runtime>(undefined);
   const [error, setError] = React.useState("");
+  const [runtimeError, setRuntimeError] = React.useState("");
   const [timeTaken, setTimeTaken] = React.useState(0);
+  const [key, setKey] = React.useState(0);
   const run = () => {
     const start = Date.now();
     try {
@@ -38,12 +38,27 @@ int main() {
       setRt(rt);
       setTimeTaken(Date.now() - start);
       setError("");
-      console.log(rt.staticNames);
+      setRuntimeError("");
     } catch (err) {
       setTimeTaken(Date.now() - start);
       setError(getErrorMessage(err));
     }
   };
+
+  const next = () => {
+    if (rt !== undefined) {
+      try {
+        const nextRt = cviz.next(rt);
+        setRt(nextRt);
+        setKey(key + 1);
+      } catch (err) {
+        console.error(err);
+        setRuntimeError(getErrorMessage(err));
+      }
+    }
+  };
+
+  let viewRef = useRef<EditorView>();
 
   return (
     <>
@@ -58,37 +73,71 @@ int main() {
             <CodeMirror
               value={code}
               height="500px"
-              extensions={[cpp()]}
+              extensions={[cpp(), markField]}
               onChange={onChange}
+              readOnly={rt !== undefined}
+              onCreateEditor={(view, state) => (viewRef.current = view)}
             />
             <br />
             <div className="text-center">
-              <button type="button" className="btn btn-dark m-1" onClick={run}>
+              <button
+                type="button"
+                className="btn btn-dark m-1"
+                onClick={run}
+                disabled={rt !== undefined}
+              >
                 Run
               </button>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-primary m-1"
+                onClick={next}
+                disabled={rt === undefined || runtimeError !== ""}
+              >
+                Next
+              </button>
+              <button
+                type="button"
+                className="btn btn-light m-1"
                 onClick={() => window.location.reload()}
               >
                 Reset
               </button>
             </div>
+            {runtimeError !== "" && (
+              <pre
+                className="text-danger border border-danger p-2 my-3"
+                style={{
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                <strong>Runtime Error</strong>
+                <br />
+                {runtimeError}
+              </pre>
+            )}
           </div>
           <div className="col-8">
             <div className="container-fluid">
               <div className="row">
-                <div className="col viz">
-                  <div id="agenda" className="border"></div>
+                <div className="col-4 viz">
+                  <Agenda
+                    agenda={rt?.agenda}
+                    view={viewRef.current}
+                    key={key}
+                  />
                   <label className="text-center">Agenda</label>
                 </div>
-                <div className="col viz">
-                  <div id="stash" className="border"></div>
+                <div className="col-4 viz">
+                  <Stash stash={rt?.stash} />
                   <label className="text-center">Stash</label>
                 </div>
-                <div className="col viz">
-                  <div id="static-names" className="border"></div>
-                  <label className="text-center">Static Names</label>
+                <div className="col-4 viz">
+                  <ExternalDeclarations
+                    declarations={rt?.externalDeclarations}
+                    key={key}
+                  />
+                  <label className="text-center">External Declarations</label>
                 </div>
               </div>
               <div className="row" style={{ marginTop: "30px" }}>
@@ -114,7 +163,7 @@ int main() {
           >
             <h4>Debugging Output</h4>
           </span>
-          {timeTaken > 0 && (<pre>Time elapsed: {timeTaken} ms</pre>)}
+          {timeTaken > 0 && <pre>Time elapsed: {timeTaken} ms</pre>}
           {error === "" && rt !== undefined && <JsonView src={rt} />}
           {error !== "" && (
             <pre

@@ -8,6 +8,19 @@
   padding: 10px;
 }
 
-.viz div {
+.viz > div {
   height: 400px;
+}
+
+.code-highlight {
+  display: inline;
+  padding: 0.25em 0;
+  background: #fdfd96;
+  box-shadow:
+    0.5em 0 0 #fdfd96,
+    -0.5em 0 0 #fdfd96;
+}
+
+.tooltip-inner {
+  text-align: left !important;
 }
