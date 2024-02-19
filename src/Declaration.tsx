@@ -1,5 +1,10 @@
 import React, { useId } from "react";
-import { Declaration as DeclarationType } from "c-viz/lib/interpreter";
+import {
+  Declaration as DeclarationType,
+  FunctionDeclaration,
+} from "c-viz/lib/interpreter";
+import { decimalAddressToHex, hexDump } from "./utils";
+import { has } from "lodash";
 
 interface DeclarationProps {
   data: DeclarationType;
@@ -7,39 +12,77 @@ interface DeclarationProps {
 
 const Declaration: React.FC<DeclarationProps> = ({ data }) => {
   const id = useId();
-  const { identifier, specifiers, isPtr, value } = data;
+  const { identifier, specifiers, isPtr, value, sizeof, address } = data;
+  const isFunctionDeclaration = has(data, "params");
   return (
     <>
       <a
         href={"#" + id}
         className={
-          "list-group-item list-group-item-action" +
+          "list-group-item list-group-item-action p-0" +
           (value === undefined ? " list-group-item-danger" : "")
         }
         data-bs-toggle="modal"
+        id={"" + address}
       >
-        <div className="d-flex w-100 justify-content-between">
-          <span>
-            <h5 className="mb-0" style={{ display: "inline-block" }}>
-              {identifier}
-            </h5>
-            <small className="mx-1">
-              <code>
-                :{isPtr && "ptr to "}
-                {specifiers}
-              </code>
-            </small>
-          </span>
-          <code
-            className="mb-0"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "flex-end",
-            }}
+        <div
+          className={
+            "border-start px-2 py-1 border-2 " +
+            (isFunctionDeclaration
+              ? "border-success-subtle"
+              : "border-warning-subtle")
+          }
+        >
+          <div
+            className="font-monospace text-body-tertiary hstack"
+            style={{ fontSize: "12px" }}
           >
-            {value === undefined ? "uninitialized" : JSON.stringify(value)}
-          </code>
+            <div>0x{decimalAddressToHex(address)}</div>
+            <div className="vr mx-1"></div>
+            {isFunctionDeclaration ? (
+              <div className="text-truncate">
+                {value === 0 ? "-" : (value as { src: string }).src}
+              </div>
+            ) : (
+              <>
+                <div>{sizeof}</div>
+                <div className="vr mx-1"></div>
+                <div className="text-truncate">{hexDump(data)}</div>
+              </>
+            )}
+          </div>
+          <hr className="m-0" />
+          <div className="d-flex w-100 justify-content-between">
+            <span>
+              <h5 className="mb-0" style={{ display: "inline-block" }}>
+                {identifier}
+              </h5>
+              <small className="mx-1">
+                <code>
+                  :{isPtr && "ptr to "}
+                  {specifiers}
+                </code>
+              </small>
+            </span>
+            <code
+              className="mb-0"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "flex-end",
+              }}
+            >
+              {isFunctionDeclaration
+                ? "(" +
+                  (data as FunctionDeclaration).params
+                    .map((i) => i.specifiers)
+                    .join(", ") +
+                  ")"
+                : value === undefined
+                  ? "uninitialized"
+                  : JSON.stringify(value)}
+            </code>
+          </div>
         </div>
       </a>
       <div className="modal fade" id={id} tabIndex={-1} aria-hidden="true">

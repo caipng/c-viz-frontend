@@ -1,5 +1,6 @@
 import { EditorView, Decoration } from "@codemirror/view";
 import { StateField, StateEffect, Range } from "@codemirror/state";
+import { Declaration } from "c-viz/lib/interpreter";
 
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -43,4 +44,13 @@ export function removeHighlight(view: EditorView, a: number, b: number) {
   view.dispatch({
     effects: filterMarks.of((from, to) => to <= a || from >= b),
   });
+}
+
+export function decimalAddressToHex(addr: number) {
+  return ("00000000" + addr.toString(16).toUpperCase()).slice(-8);
+}
+
+export function hexDump(i: Declaration) {
+  if (i.rawValue === undefined) return "-";
+  return ("00000000" + i.rawValue.toString(16).toUpperCase()).slice(-i.sizeof);
 }

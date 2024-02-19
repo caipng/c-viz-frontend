@@ -5,6 +5,7 @@
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.2",
     "@floating-ui/react": "^0.26.6",
+    "@jsplumb/browser-ui": "^6.2.10",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -25,7 +26,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

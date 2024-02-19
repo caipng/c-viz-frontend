@@ -10,7 +10,10 @@ const ExternalDeclarations: React.FC<ExternalDeclarationsProps> = ({
   declarations,
 }) => {
   return (
-    <div className="list-group border" style={{ overflowY: "auto" }}>
+    <div
+      className="list-group border hide-scroll"
+      style={{ overflowY: "auto" }}
+    >
       {declarations === undefined ||
         declarations.map((d: DeclarationType, i: Key) => (
           <Declaration data={d} key={i} />

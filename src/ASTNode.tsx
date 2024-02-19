@@ -20,12 +20,17 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
 
   useEffect(() => {
     if (!tooltipRef.current) return;
-    new Tooltip(tooltipRef.current, {
+    const t = new Tooltip(tooltipRef.current, {
       title: "<pre class='mb-0'>" + src + "</pre>",
       placement: "left",
       trigger: "hover",
       html: true,
     });
+    const e = document.getElementById(id);
+    if (e) {
+      e.addEventListener("hide.bs.modal", (event) => t.enable());
+      e.addEventListener("show.bs.modal", (event) => t.disable());
+    }
   });
 
   return (
@@ -33,7 +38,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
       <a
         href={"#" + id}
         className={
-          "list-group-item list-group-item-action p-2" +
+          "list-group-item list-group-item-action px-2 py-1" +
           (active ? " border-2 border-primary-subtle" : "")
         }
         data-bs-toggle="modal"
@@ -52,7 +57,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
             {end.line}:<span className="text-secondary">{end.column}</span>
           </small>
         </div>
-        <p className="mb-0">
+        <div className="mb-0">
           <pre
             style={{
               whiteSpace: "nowrap",
@@ -63,7 +68,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
           >
             {src}
           </pre>
-        </p>
+        </div>
       </a>
       <div className="modal fade" id={id} tabIndex={-1} aria-hidden="true">
         <div className="modal-dialog">

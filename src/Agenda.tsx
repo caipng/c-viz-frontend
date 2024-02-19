@@ -7,6 +7,7 @@ import {
 } from "c-viz/lib/interpreter";
 import ASTNode from "./ASTNode";
 import { EditorView } from "@uiw/react-codemirror";
+import Instruction from "./Instruction";
 import { isEmpty } from "lodash";
 
 interface AgendaProps {
@@ -23,13 +24,16 @@ const Agenda: React.FC<AgendaProps> = ({ agenda, view }) => {
     });
   }, []);
   return (
-    <div className="list-group border" style={{ overflowY: "auto" }}>
+    <div
+      className="list-group border hide-scroll"
+      style={{ overflowY: "auto" }}
+    >
       {agenda === undefined ||
         agenda.getArr().map((i: AgendaItem, k: Key, arr: AgendaItem[]) => {
           const isLast = k === arr.length - 1;
           if (isASTNode(i))
             return (
-              <span ref={isLast ? lastEl : null}>
+              <span ref={isLast ? lastEl : null} key={k}>
                 <ASTNode node={i} view={view} active={isLast} key={k} />
               </span>
             );
@@ -44,25 +48,16 @@ const Agenda: React.FC<AgendaProps> = ({ agenda, view }) => {
                 key={k}
                 ref={isLast ? lastEl : null}
               >
-                <div className="border-start border-3 border-dark-subtle p-2">
-                  <div className="d-flex w-100 justify-content-between">
-                    <h6
-                      className="mb-0 text-uppercase"
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      {type}
-                    </h6>
-                    {isEmpty(others) || (
-                      <small className="fw-semibold bg-secondary-subtle border border-dark-subtle rounded-2 px-2 py-0">
-                        {Object.values(others).join(", ")}
-                      </small>
-                    )}
-                  </div>
-                </div>
+                <Instruction
+                  type={type}
+                  args={
+                    isEmpty(others)
+                      ? ""
+                      : Object.values(others)
+                          .map((i) => JSON.stringify(i))
+                          .join(", ")
+                  }
+                />
               </span>
             );
           }

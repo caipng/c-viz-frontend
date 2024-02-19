@@ -10,6 +10,13 @@ import { Runtime } from "c-viz/lib/interpreter";
 import { getErrorMessage, markField } from "./utils";
 import ExternalDeclarations from "./ExternalDeclarations";
 import Stash from "./Stash";
+import {
+  BezierConnector,
+  BrowserJsPlumbInstance,
+  StateMachineConnector,
+  newInstance,
+} from "@jsplumb/browser-ui";
+import Stack from "./Stack";
 
 function App() {
   const [code, setCode] = React.useState("");
@@ -28,10 +35,12 @@ function App() {
 
   const [rt, setRt] = React.useState<undefined | Runtime>(undefined);
   const [error, setError] = React.useState("");
+  const [done, setDone] = React.useState(false);
   const [runtimeError, setRuntimeError] = React.useState("");
   const [timeTaken, setTimeTaken] = React.useState(0);
   const [key, setKey] = React.useState(0);
   const run = () => {
+    setDone(false);
     const start = Date.now();
     try {
       const rt = cviz.run(code);
@@ -49,16 +58,51 @@ function App() {
     if (rt !== undefined) {
       try {
         const nextRt = cviz.next(rt);
+        console.log(nextRt.symTable);
         setRt(nextRt);
         setKey(key + 1);
       } catch (err) {
         console.error(err);
         setRuntimeError(getErrorMessage(err));
       }
+      if (rt.exitCode !== undefined) {
+        setDone(true);
+      }
     }
   };
 
   let viewRef = useRef<EditorView>();
+
+  const canvas = document.getElementById("canvas");
+  let instance: BrowserJsPlumbInstance | undefined;
+  if (canvas) {
+    instance = newInstance({
+      container: canvas,
+      elementsDraggable: false,
+    });
+  }
+  useEffect(() => {
+    if (!canvas || !instance) return;
+    instance.deleteEveryConnection();
+    canvas.querySelectorAll(".ptr-from").forEach((elem) => {
+      const addr = (elem as HTMLElement).dataset.address;
+      const to = document.getElementById("" + addr);
+      if (!to || !instance) return;
+      // console.log(elem, to);
+      instance.connect({
+        source: elem,
+        target: to,
+        connector: {
+          type: BezierConnector.type,
+          options: { curviness: 30 },
+        },
+        anchors: ["Right", "Left"],
+        endpoints: ["Dot", "Blank"],
+        overlays: [{ type: "Arrow", options: { location: 1 } }],
+      });
+    });
+    instance.repaintEverything();
+  }, [key, canvas, instance]);
 
   return (
     <>
@@ -68,7 +112,7 @@ function App() {
         <br />
       </div>
       <div className="container-fluid" id="container">
-        <div className="row" style={{ paddingBottom: "100px" }}>
+        <div className="row g-1" style={{ paddingBottom: "100px" }}>
           <div className="col-4">
             <CodeMirror
               value={code}
@@ -92,9 +136,19 @@ function App() {
                 type="button"
                 className="btn btn-primary m-1"
                 onClick={next}
-                disabled={rt === undefined || runtimeError !== ""}
+                disabled={rt === undefined || runtimeError !== "" || done}
               >
-                Next
+                {"Next"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary m-1"
+                onClick={() => {
+                  for (let i = 0; i < 5; i++) next();
+                }}
+                disabled={rt === undefined || runtimeError !== "" || done}
+              >
+                {">>"}
               </button>
               <button
                 type="button"
@@ -116,33 +170,41 @@ function App() {
                 {runtimeError}
               </pre>
             )}
+            {rt?.exitCode !== undefined && (
+              <pre
+                className="text-success border border-success p-2 my-3"
+                style={{
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                Program exited with code <strong>{rt.exitCode}</strong>
+              </pre>
+            )}
           </div>
-          <div className="col-8">
+          <div className="col-8" id="canvas" style={{ position: "relative" }}>
             <div className="container-fluid">
-              <div className="row">
-                <div className="col-4 viz">
+              <div className="row g-2">
+                <div className="col-5 viz">
                   <Agenda
                     agenda={rt?.agenda}
                     view={viewRef.current}
                     key={key}
                   />
-                  <label className="text-center">Agenda</label>
+                  <label className="text-center">Control</label>
                 </div>
-                <div className="col-4 viz">
+                <div className="col-2 viz">
                   <Stash stash={rt?.stash} />
                   <label className="text-center">Stash</label>
                 </div>
-                <div className="col-4 viz">
+                <div className="col-5 viz">
                   <ExternalDeclarations
                     declarations={rt?.externalDeclarations}
                     key={key}
                   />
                   <label className="text-center">External Declarations</label>
                 </div>
-              </div>
-              <div className="row" style={{ marginTop: "30px" }}>
                 <div className="col-5 viz">
-                  <div id="stack" className="border"></div>
+                  <Stack stack={rt?.symTable} />
                   <label className="text-center">Stack</label>
                 </div>
                 <div className="col-7 viz">
