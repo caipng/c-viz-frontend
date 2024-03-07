@@ -1,18 +1,15 @@
 import React, { useId } from "react";
-import {
-  Declaration as DeclarationType,
-  FunctionDeclaration,
-} from "c-viz/lib/interpreter";
 import { decimalAddressToHex, hexDump } from "./utils";
 import { has } from "lodash";
+import { RuntimeObject, FunctionDefinition } from "c-viz/lib/interpreter/types";
 
 interface DeclarationProps {
-  data: DeclarationType;
+  data: RuntimeObject;
 }
 
 const Declaration: React.FC<DeclarationProps> = ({ data }) => {
   const id = useId();
-  const { identifier, specifiers, isPtr, value, sizeof, address } = data;
+  const { identifier, specifiers, value, sizeof, address } = data;
   const isFunctionDeclaration = has(data, "params");
   return (
     <>
@@ -27,10 +24,10 @@ const Declaration: React.FC<DeclarationProps> = ({ data }) => {
       >
         <div
           className={
-            "border-start px-2 py-1 border-2 " +
+            "px-2 py-1 " +
             (isFunctionDeclaration
-              ? "border-success-subtle"
-              : "border-warning-subtle")
+              ? "border-start border-2 border-dark-subtle"
+              : "")
           }
         >
           <div
@@ -41,7 +38,7 @@ const Declaration: React.FC<DeclarationProps> = ({ data }) => {
             <div className="vr mx-1"></div>
             {isFunctionDeclaration ? (
               <div className="text-truncate">
-                {value === 0 ? "-" : (value as { src: string }).src}
+                {value === undefined ? "-" : (value as { src: string }).src}
               </div>
             ) : (
               <>
@@ -58,10 +55,7 @@ const Declaration: React.FC<DeclarationProps> = ({ data }) => {
                 {identifier}
               </h5>
               <small className="mx-1">
-                <code>
-                  :{isPtr && "ptr to "}
-                  {specifiers}
-                </code>
+                <code>{specifiers}</code>
               </small>
             </span>
             <code
@@ -74,7 +68,7 @@ const Declaration: React.FC<DeclarationProps> = ({ data }) => {
             >
               {isFunctionDeclaration
                 ? "(" +
-                  (data as FunctionDeclaration).params
+                  (data as FunctionDefinition).params
                     .map((i) => i.specifiers)
                     .join(", ") +
                   ")"

@@ -3,7 +3,7 @@ import { Tooltip } from "bootstrap";
 
 interface InstructionProps {
   type: string;
-  args: string;
+  args: string[];
 }
 
 const helperTexts: { [type: string]: string } = {
@@ -22,33 +22,31 @@ const Instruction: React.FC<InstructionProps> = ({ type, args }) => {
   useEffect(() => {
     if (!tooltipRef.current) return;
     if (!(type in helperTexts)) return;
-    new Tooltip(tooltipRef.current, {
-      title: helperTexts[type],
-      placement: "left",
-      trigger: "hover",
-    });
+    // new Tooltip(tooltipRef.current, {
+    //   title: helperTexts[type],
+    //   placement: "left",
+    //   trigger: "hover",
+    // });
   });
   return (
-    <div
-      className="border-start border-3 border-dark-subtle p-2"
-      ref={tooltipRef}
-    >
+    <div className="py-1 px-2" ref={tooltipRef}>
       <div className="d-flex w-100 justify-content-between">
-        <h6
-          className="mb-0 text-uppercase"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          {type}
-        </h6>
-        {args === "" || (
-          <small className="fw-semibold bg-secondary-subtle border border-dark-subtle rounded-2 px-1 py-0 text-truncate ms-1">
-            {args}
-          </small>
-        )}
+        <div className="mb-0 fill-flex">
+          <abbr title={helperTexts[type]} className="initialism">
+            {type}
+          </abbr>
+        </div>
+        <div className="d-flex fill-flex">
+          {args.length === 0 ||
+            args.map((s, i) => (
+              <code
+                className="badge text-bg-primary bg-opacity-75 text-truncate fw-normal ms-1 align-self-center"
+                key={i}
+              >
+                {s}
+              </code>
+            ))}
+        </div>
       </div>
     </div>
   );

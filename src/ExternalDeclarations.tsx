@@ -1,23 +1,25 @@
 import React, { Key } from "react";
 import Declaration from "./Declaration";
-import { Declaration as DeclarationType } from "c-viz/lib/interpreter";
+import { RuntimeObject } from "c-viz/lib/interpreter/types";
 
 interface ExternalDeclarationsProps {
-  declarations: DeclarationType[] | undefined;
+  declarations: RuntimeObject[] | undefined;
 }
 
 const ExternalDeclarations: React.FC<ExternalDeclarationsProps> = ({
   declarations,
 }) => {
   return (
-    <div
-      className="list-group border hide-scroll"
-      style={{ overflowY: "auto" }}
-    >
-      {declarations === undefined ||
-        declarations.map((d: DeclarationType, i: Key) => (
-          <Declaration data={d} key={i} />
-        ))}
+    <div className="card">
+      <div className="card-header text-center py-0">
+        <small>EXT. DECLARATIONS</small>
+      </div>
+      <div className="list-group hide-scroll" style={{ overflowY: "auto" }}>
+        {declarations === undefined ||
+          declarations.map((d: RuntimeObject, i: Key) => (
+            <Declaration data={d} key={i} />
+          ))}
+      </div>
     </div>
   );
 };

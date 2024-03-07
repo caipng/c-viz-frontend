@@ -1,5 +1,5 @@
 import React, { Key } from "react";
-import { SymbolTable } from "c-viz/lib/interpreter";
+import { SymbolTable } from "c-viz/lib/interpreter/types";
 import { has } from "lodash";
 
 interface StackProps {
@@ -8,48 +8,50 @@ interface StackProps {
 
 const Stack: React.FC<StackProps> = ({ stack }) => {
   return (
-    <div
-      className="list-group border hide-scroll"
-      style={{ overflowY: "auto" }}
-    >
-      {stack === undefined ||
-        stack.map((v: SymbolTable, k: Key, arr) => {
-          const isLast = k === arr.length - 1;
-          return (
-            <span
-              className={
-                "list-group-item list-group-item-action p-0 list-group-item-light" +
-                (isLast ? " border-2 border-primary-subtle" : "")
-              }
-              key={k}
-            >
-              <div className="p-2 w-100">
-                <div className="d-flex w-100 justify-content-between">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Identifier</th>
-                        <th scope="col">Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(v).map((i) => (
+    <div className="card">
+      <div className="card-header text-center py-0">
+        <small>STACK</small>
+      </div>
+      <div className="list-group hide-scroll" style={{ overflowY: "auto" }}>
+        {stack === undefined ||
+          stack.map((v: SymbolTable, k: Key, arr) => {
+            const isLast = k === arr.length - 1;
+            return (
+              <span
+                className={
+                  "list-group-item list-group-item-action p-0 list-group-item-light" +
+                  (isLast ? " border-2 border-primary-subtle last-item" : "")
+                }
+                key={k}
+              >
+                <div className="p-2 w-100">
+                  <div className="d-flex w-100 justify-content-between">
+                    <table className="table">
+                      <thead>
                         <tr>
-                          <td>{i[0]}</td>
-                          <td>
-                            {has(i[1], "params")
-                              ? "[function]"
-                              : JSON.stringify(i[1].value)}
-                          </td>
+                          <th scope="col">Identifier</th>
+                          <th scope="col">Value</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {Object.entries(v).map((i) => (
+                          <tr key={i[0]}>
+                            <td>{i[0]}</td>
+                            <td>
+                              {has(i[1], "params")
+                                ? "[function]"
+                                : JSON.stringify(i[1].value)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            </span>
-          );
-        })}
+              </span>
+            );
+          })}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { EditorView, Decoration } from "@codemirror/view";
 import { StateField, StateEffect, Range } from "@codemirror/state";
-import { Declaration } from "c-viz/lib/interpreter";
+import { RuntimeObject } from "c-viz/lib/interpreter/types";
 
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -50,7 +50,7 @@ export function decimalAddressToHex(addr: number) {
   return ("00000000" + addr.toString(16).toUpperCase()).slice(-8);
 }
 
-export function hexDump(i: Declaration) {
+export function hexDump(i: RuntimeObject) {
   if (i.rawValue === undefined) return "-";
   return ("00000000" + i.rawValue.toString(16).toUpperCase()).slice(-i.sizeof);
 }

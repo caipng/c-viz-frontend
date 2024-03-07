@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef } from "react";
-import { ASTNode as ASTNodeType } from "c-viz/lib/interpreter";
+import { ASTNode as ASTNodeType } from "c-viz/lib/ast/types";
 import { EditorView } from "@uiw/react-codemirror";
 import { addHighlight, removeHighlight } from "./utils";
 import { Tooltip } from "bootstrap";
@@ -37,10 +37,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
     <span ref={tooltipRef}>
       <a
         href={"#" + id}
-        className={
-          "list-group-item list-group-item-action px-2 py-1" +
-          (active ? " border-2 border-primary-subtle" : "")
-        }
+        className={"list-group-item list-group-item-action px-2 py-1"}
         data-bs-toggle="modal"
         onMouseEnter={(e) =>
           view && addHighlight(view, start.offset, end.offset)
@@ -51,11 +48,14 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
       >
         <div className="d-flex w-100 justify-content-between">
           <h6 className="mb-1">{type}</h6>
-          <small>
-            {start.line}:<span className="text-secondary">{start.column}</span>
-            {" - "}
-            {end.line}:<span className="text-secondary">{end.column}</span>
-          </small>
+          <span className="badge text-bg-light">
+            <small>
+              {start.line}:
+              <span className="text-secondary">{start.column}</span>
+              {" - "}
+              {end.line}:<span className="text-secondary">{end.column}</span>
+            </small>
+          </span>
         </div>
         <div className="mb-0">
           <pre
