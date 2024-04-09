@@ -1,19 +1,19 @@
 import React, { useEffect, useId, useRef } from "react";
-import { ASTNode as ASTNodeType } from "c-viz/lib/ast/types";
 import { EditorView } from "@uiw/react-codemirror";
-import { addHighlight, removeHighlight } from "./utils";
+import { addHighlight, removeHighlight } from "../../utils/utils";
 import { Tooltip } from "bootstrap";
 import CodeMirror from "@uiw/react-codemirror";
 import { cpp } from "@codemirror/lang-cpp";
 import JsonView from "react18-json-view";
+import { TypedASTNode as ASTNodeType } from "c-viz/lib/ast/types";
 
 interface ASTNodeProps {
   node: ASTNodeType;
   view: EditorView | undefined;
-  active: boolean;
+  asLvalue: boolean;
 }
 
-const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
+const ASTNode: React.FC<ASTNodeProps> = ({ node, view, asLvalue }) => {
   const id = useId();
   const { type, start, end, src, ...others } = node;
   const tooltipRef = useRef(null);
@@ -37,7 +37,10 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
     <span ref={tooltipRef}>
       <a
         href={"#" + id}
-        className={"list-group-item list-group-item-action px-2 py-1"}
+        className={
+          "list-group-item list-group-item-action px-2 py-1 " +
+          (asLvalue ? "bg-warning bg-opacity-25" : "")
+        }
         data-bs-toggle="modal"
         onMouseEnter={(e) =>
           view && addHighlight(view, start.offset, end.offset)
@@ -71,7 +74,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, active }) => {
         </div>
       </a>
       <div className="modal fade" id={id} tabIndex={-1} aria-hidden="true">
-        <div className="modal-dialog">
+        <div className="modal-dialog modal-xl">
           <div className="modal-content">
             <div className="modal-header py-2">
               <h1 className="modal-title fs-5">{type}</h1>

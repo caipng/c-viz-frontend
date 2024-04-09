@@ -18,6 +18,7 @@
     "@types/react": "^18.2.47",
     "@types/react-dom": "^18.2.18",
     "@uiw/react-codemirror": "^4.21.21",
+    "animate.css": "^4.1.1",
     "bootstrap": "^5.3.2",
     "bootstrap-icons": "^1.11.3",
     "c-viz": "^1.0.0",
