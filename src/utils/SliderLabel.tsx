@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useId } from "react";
 import { Tooltip } from "bootstrap";
 
 interface SliderLabelProps {
@@ -7,6 +7,7 @@ interface SliderLabelProps {
 
 const SliderLabel: React.FC<SliderLabelProps> = ({ tooltip }) => {
   const tooltipRef = useRef(null);
+  const id = useId();
   useEffect(() => {
     if (!tooltipRef.current) return;
     new Tooltip(tooltipRef.current, {
@@ -23,7 +24,7 @@ const SliderLabel: React.FC<SliderLabelProps> = ({ tooltip }) => {
           "--bs-icon-link-transform": "translate3d(0, -.175rem, 0)",
         } as React.CSSProperties
       }
-      href="#"
+      href={"#" + id}
       ref={tooltipRef}
     >
       <svg

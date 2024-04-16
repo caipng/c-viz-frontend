@@ -1,5 +1,5 @@
 import { StackFrame } from "c-viz/lib/interpreter/stack";
-import React, { Key, useContext } from "react";
+import React, { useContext } from "react";
 import RuntimeObject from "./components/RuntimeObject";
 import { RuntimeObject as RuntimeObjectType } from "c-viz/lib/interpreter/object";
 import { RuntimeViewContext } from "../App";

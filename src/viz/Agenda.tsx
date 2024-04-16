@@ -1,4 +1,4 @@
-import React, { Key } from "react";
+import React from "react";
 import ASTNode from "./components/ASTNode";
 import { EditorView } from "@uiw/react-codemirror";
 import Instruction from "./components/Instruction";
@@ -63,7 +63,7 @@ const Agenda: React.FC<AgendaProps> = ({
                   className={
                     "list-group-item list-group-item-action p-0 list-group-item-light" +
                     (isLast
-                      ? " border-2 border-primary-subtle last-item " 
+                      ? " border-2 border-primary-subtle last-item "
                       : "") +
                     (isMarkInstruction(i) ? " mark-inst mark-" + markIdx : "") +
                     (isReturnInstruction(i) ? " return-inst" : "") +

@@ -57,3 +57,7 @@
   animation: pulse;
   animation-duration: 0.5s;
 }
+
+.popover {
+  max-width: none !important;
+}

@@ -16,7 +16,7 @@ interface RuntimeObjectProps {
 const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
   const id = useId();
   const { identifier, typeInfo, address, bytes } = data;
-  const { size, type, alignment } = typeInfo;
+  const { size, alignment } = typeInfo;
   const value = displayValue(bytes, typeInfo, useContext(EndiannessContext));
   const bytesDisplayOpt = useContext(BytesDisplayContext);
   const isMisaligned =

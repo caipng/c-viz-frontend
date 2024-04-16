@@ -35,6 +35,9 @@ import { bytesToBigint } from "c-viz/lib/typing/representation";
 import { isScalarType, isSigned } from "c-viz/lib/typing/types";
 import Heap from "./viz/Heap";
 import "animate.css";
+import { Popover } from "bootstrap";
+import { Buffer } from "buffer";
+import ReactDOMServer from "react-dom/server";
 
 const SAMPLES_DIR = "samples/";
 const samples: string[] = [
@@ -223,6 +226,7 @@ function App() {
   const [bytesDisplay, setBytesDisplay] =
     React.useState<BytesDisplayOption>("hex");
   const [sample, setSample] = React.useState("");
+  const popoverRef = useRef(null);
 
   const onChange = React.useCallback((val: React.SetStateAction<string>) => {
     setCode(val);
@@ -312,12 +316,35 @@ function App() {
     setLoading(false);
   };
 
+  const encode = (code: string) =>
+    encodeURIComponent(Buffer.from(code).toString("base64"));
+
+  const getCodeFromURL = (): string => {
+    const url = new URL(window.location.href);
+    const base64url = url.searchParams.get("code");
+    if (!base64url) return "";
+    return Buffer.from(decodeURIComponent(base64url), "base64").toString();
+  };
+
   let viewRef = useRef<EditorView>();
   let instance = useRef<BrowserJsPlumbInstance>();
   let listManager = useRef<JsPlumbListManager>();
   let observer = useRef<IntersectionObserver>();
+  let p = useRef<Popover>();
 
   useEffect(() => {
+    setCode(getCodeFromURL());
+
+    if (popoverRef.current)
+      p.current = new Popover(popoverRef.current, {
+        placement: "top",
+        html: true,
+        content: "",
+        title: "Permanent link",
+        sanitize: false,
+        trigger: "click",
+      });
+
     const canvas = document.getElementById("canvas");
     if (!canvas) throw new Error("canvas not found");
 
@@ -373,11 +400,44 @@ function App() {
   useEffect(() => onIdxChange(instance.current, observer.current), [idx]);
 
   useEffect(() => {
-    if (!samples.includes(sample)) return setCode("");
+    if (!samples.includes(sample)) return;
     fetch(SAMPLES_DIR + sample)
       .then((r) => r.text())
       .then((t) => setCode(t));
   }, [sample]);
+
+  useEffect(() => {
+    if (!p.current) return;
+    const url = window.location.origin + "?code=" + encode(code);
+    const content = ReactDOMServer.renderToString(
+      <div className="input-group" style={{ width: 500 }}>
+        <button
+          className="btn btn-outline-secondary copy-code-btn"
+          type="button"
+          disabled
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            className="bi bi-copy"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"
+            />
+          </svg>
+        </button>
+        <input type="text" className="form-control" value={url} readOnly />
+      </div>,
+    );
+    p.current.setContent({
+      ".popover-body": content,
+      ".popover-header": "test",
+    });
+  }, [code]);
 
   return (
     <>
@@ -471,6 +531,26 @@ function App() {
                       ))}
                     </select>
                   </div>
+                </div>
+                <div className="col px-1 align-self-center">
+                  <button
+                    className="btn btn-light"
+                    type="button"
+                    ref={popoverRef}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-link-45deg mx-1"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z" />
+                      <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z" />
+                    </svg>
+                    Link
+                  </button>
                 </div>
               </div>
             </div>
