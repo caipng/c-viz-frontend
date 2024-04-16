@@ -36,6 +36,15 @@ import { isScalarType, isSigned } from "c-viz/lib/typing/types";
 import Heap from "./viz/Heap";
 import "animate.css";
 
+const SAMPLES_DIR = "samples/";
+const samples: string[] = [
+  "assign.c",
+  "basic.c",
+  "heap.c",
+  "strict-aliasing.c",
+  "struct.c",
+];
+
 export const EndiannessContext = React.createContext<Endianness>("little");
 
 export const RuntimeViewContext = React.createContext<RuntimeView | null>(null);
@@ -63,10 +72,9 @@ async function drawReturnArrows(
   instance.connect({
     source: elem,
     target: to,
-    connector: 
-	{
-       type: BezierConnector.type,
-       options: { curviness: 10 },
+    connector: {
+      type: BezierConnector.type,
+      options: { curviness: 10 },
     },
     anchor: "Left",
     endpoint: { type: DotEndpoint.type, options: { radius: 3 } },
@@ -95,9 +103,9 @@ function drawPtrArrow(
     source: from,
     target: to,
     connector: StraightConnector.type,
-		//{
-      //type: BezierConnector.type,
-      //options: { curviness: 30 },
+    //{
+    //type: BezierConnector.type,
+    //options: { curviness: 30 },
     //},
     anchors: ["Center", toAnchor],
     endpoints: [{ type: DotEndpoint.type, options: { radius: 3 } }, "Blank"],
@@ -134,7 +142,9 @@ function onIdxChange(
       elem.closest(".list-group-item")?.classList.add("list-group-item-danger");
       return;
     }
-    elem.closest(".list-group-item")?.classList.remove("list-group-item-danger");
+    elem
+      .closest(".list-group-item")
+      ?.classList.remove("list-group-item-danger");
 
     if (instance.getConnections({ source: elem, target: to }).length) return;
     (instance.getConnections({ source: elem }) as Connection<any>[]).forEach(
@@ -212,6 +222,7 @@ function App() {
   const [endianness, setEndianness] = React.useState<Endianness>("little");
   const [bytesDisplay, setBytesDisplay] =
     React.useState<BytesDisplayOption>("hex");
+  const [sample, setSample] = React.useState("");
 
   const onChange = React.useCallback((val: React.SetStateAction<string>) => {
     setCode(val);
@@ -307,10 +318,6 @@ function App() {
   let observer = useRef<IntersectionObserver>();
 
   useEffect(() => {
-    fetch("/sample-heap.c")
-      .then((r) => r.text())
-      .then((t) => setCode(t));
-
     const canvas = document.getElementById("canvas");
     if (!canvas) throw new Error("canvas not found");
 
@@ -364,6 +371,13 @@ function App() {
   }, []);
 
   useEffect(() => onIdxChange(instance.current, observer.current), [idx]);
+
+  useEffect(() => {
+    if (!samples.includes(sample)) return setCode("");
+    fetch(SAMPLES_DIR + sample)
+      .then((r) => r.text())
+      .then((t) => setCode(t));
+  }, [sample]);
 
   return (
     <>
@@ -422,17 +436,43 @@ function App() {
               onCreateEditor={(view, state) => (viewRef.current = view)}
             />
             <br />
-            <div className="text-center">
-              <button type="button" className="btn btn-dark m-1" onClick={run}>
-                Run
-              </button>
-              <button
-                type="button"
-                className="btn btn-light m-1"
-                onClick={() => window.location.reload()}
-              >
-                Reset
-              </button>
+            <div className="container text-center">
+              <div className="row row-cols-auto justify-content-center">
+                <div className="col px-1">
+                  <button type="button" className="btn btn-dark" onClick={run}>
+                    Run
+                  </button>
+                </div>
+                <div className="col px-1">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => window.location.reload()}
+                  >
+                    Reset
+                  </button>
+                </div>
+                <div className="col px-1 align-self-center">
+                  <div className="input-group" style={{ width: 250 }}>
+                    <label className="input-group-text" htmlFor="sample-select">
+                      Sample
+                    </label>
+                    <select
+                      className="form-select"
+                      id="sample-select"
+                      value={sample}
+                      onChange={(e) => setSample(e.target.value)}
+                    >
+                      <option value="">Choose..</option>
+                      {samples.map((file) => (
+                        <option value={file} key={file}>
+                          {file}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
             {loading && (
               <div className="text-center">

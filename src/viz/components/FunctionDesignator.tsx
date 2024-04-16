@@ -19,7 +19,7 @@ const FunctionDesignator: React.FC<FunctionDesignatorProps> = ({
 }) => {
   const id = useId();
   const { typeInfo, address, identifier } = data;
-  const { returnType, parameterTypes, type } = typeInfo;
+  const { returnType, parameterTypes } = typeInfo;
 
   const endianness = useContext(EndiannessContext);
   const rt = useContext(RuntimeViewContext);
@@ -70,8 +70,9 @@ const FunctionDesignator: React.FC<FunctionDesignatorProps> = ({
             >
               {"(" +
                 parameterTypes.map((i) => getTypeName(i.type)).join(", ") +
-                ") > " +
-                getTypeName(returnType)}
+                ")"}
+              <> &rarr; </>
+              {getTypeName(returnType)}
             </code>
           </div>
         </div>
