@@ -435,7 +435,7 @@ function App() {
     );
     p.current.setContent({
       ".popover-body": content,
-      ".popover-header": "test",
+      ".popover-header": "Permanent Link",
     });
   }, [code]);
 
