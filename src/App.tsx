@@ -42,10 +42,11 @@ import ReactDOMServer from "react-dom/server";
 const SAMPLES_DIR = "samples/";
 const samples: string[] = [
   "assign.c",
-  "basic.c",
+  "blocks.c",
   "heap.c",
   "strict-aliasing.c",
   "struct.c",
+  "uninit.c",
 ];
 
 export const EndiannessContext = React.createContext<Endianness>("little");
@@ -496,7 +497,7 @@ function App() {
               onCreateEditor={(view, state) => (viewRef.current = view)}
             />
             <br />
-            <div className="container text-center">
+            <div className="container text-center my-1 mb-5">
               <div className="row row-cols-auto justify-content-center">
                 <div className="col px-1">
                   <button type="button" className="btn btn-dark" onClick={run}>
@@ -677,6 +678,7 @@ function App() {
                       <div className="col-6 viz">
                         <Stack
                           stack={idx === undefined ? undefined : rts[idx].stack}
+                          colors={randColors}
                         />
                       </div>
                       <div className="col-6 viz">

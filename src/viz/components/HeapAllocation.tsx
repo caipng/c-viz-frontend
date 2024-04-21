@@ -37,6 +37,7 @@ const drawHeapContents = (
         cnt = 0;
       }
       const r = new RuntimeObjectType(tc, curr, "", rt.memory);
+      r.initialized = true;
       res.push(<RuntimeObject data={r} />);
       curr += tc.size;
     }

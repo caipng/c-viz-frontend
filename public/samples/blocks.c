@@ -9,24 +9,25 @@ char C;
 
 void f(int a, int b, char c) {
   int d = a + b;
-  d++;
   int * p = malloc(15);
   int * p1 = (int *) malloc(15);
   {
     int ii;
     int kk;
-    p1++;
   }
   {
     int jj;
     int kk;
     {
-      short s1;
+      short kk;
+      kk = 1;
     }
+    int ll;
     {
       short s2;
     }
   }
+  return;
 }
 
 int main() {

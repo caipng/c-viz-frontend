@@ -15,7 +15,7 @@ interface RuntimeObjectProps {
 
 const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
   const id = useId();
-  const { identifier, typeInfo, address, bytes } = data;
+  const { identifier, typeInfo, address, bytes, initialized } = data;
   const { size, alignment } = typeInfo;
   const value = displayValue(bytes, typeInfo, useContext(EndiannessContext));
   const bytesDisplayOpt = useContext(BytesDisplayContext);
@@ -28,7 +28,7 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
         href={"#" + id}
         className={
           "list-group-item list-group-item-action p-0" +
-          (isMisaligned ? " list-group-item-danger" : "")
+          (isMisaligned || !initialized ? " list-group-item-danger" : "")
         }
         data-bs-toggle="modal"
         style={{ position: "static" }}

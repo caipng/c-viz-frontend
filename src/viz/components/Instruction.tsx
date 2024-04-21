@@ -97,6 +97,11 @@ const instructions: {
       "Performs array subscript operation on the top 2 items in the stash",
     displayArgs: (i) => [],
   },
+  [InstructionType.EXIT_BLOCK]: {
+    displayName: "Exit Block",
+    helperText: "Exits the current block",
+    displayArgs: (i) => [],
+  },
 };
 
 const Instruction: React.FC<InstructionProps> = ({ inst }) => {
