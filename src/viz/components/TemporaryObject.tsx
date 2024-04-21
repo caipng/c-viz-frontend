@@ -1,9 +1,20 @@
 import { TemporaryObject as TemporaryObjectType } from "c-viz/lib/interpreter/object";
-import { getTypeName, isPointer } from "c-viz/lib/typing/types";
-import React, { useContext, useId } from "react";
+import {
+  getTypeName,
+  isFunctionTypeInfo,
+  isObjectTypeInfo,
+  isPointer,
+} from "c-viz/lib/typing/types";
+import React, { useContext, useEffect, useId, useRef } from "react";
 import { displayBytes } from "../../utils/utils";
 import { displayValue, visualizeObject } from "../../utils/object";
-import { BytesDisplayContext, EndiannessContext } from "../../App";
+import {
+  BytesDisplayContext,
+  EndiannessContext,
+  RuntimeViewContext,
+} from "../../App";
+import { SHRT_ALIGN } from "c-viz/lib/constants";
+import { Tooltip } from "bootstrap";
 
 interface TemporaryObjectProps {
   data: TemporaryObjectType;
@@ -16,8 +27,37 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
   const { size } = typeInfo;
   const value = displayValue(bytes, typeInfo, useContext(EndiannessContext));
   const bytesDisplayOpt = useContext(BytesDisplayContext);
-  const isMisaligned =
-    isPointer(typeInfo) && parseInt(value, 16) % typeInfo.alignment;
+
+  const rt = useContext(RuntimeViewContext);
+  let isMisaligned = false;
+  let pointsToUnalloc = false;
+  if (isPointer(typeInfo)) {
+    const ptrValue = parseInt(value, 16);
+    const t = typeInfo.referencedType;
+    const alignment = isObjectTypeInfo(t)
+      ? t.alignment
+      : isFunctionTypeInfo(t)
+        ? SHRT_ALIGN
+        : 0;
+    isMisaligned = ptrValue % alignment > 0;
+    if (ptrValue && rt) pointsToUnalloc = !(ptrValue in rt.effectiveTypeTable);
+  }
+
+  const hasErr = isMisaligned || pointsToUnalloc;
+  const tooltipRef = useRef(null);
+  useEffect(() => {
+    if (!tooltipRef.current || !hasErr) return;
+    new Tooltip(tooltipRef.current, {
+      title: isMisaligned
+        ? "unaligned pointer"
+        : pointsToUnalloc
+          ? "pointer to unallocated memory"
+          : "unknown error",
+      placement: "top",
+      trigger: "hover",
+    });
+  });
+
   return (
     <>
       <a
@@ -26,10 +66,11 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
           "list-group-item list-group-item-action p-0" +
           (isLast ? " border-2 border-primary-subtle last-item" : "") +
           (isPointer(typeInfo) ? " ptr-from" : "") +
-          (isMisaligned ? " list-group-item-danger" : "")
+          (hasErr ? " list-group-item-danger" : "")
         }
         data-bs-toggle="modal"
         data-address={isPointer(typeInfo) ? value : undefined}
+        ref={tooltipRef}
       >
         <div className={"px-2 py-1 "}>
           <div

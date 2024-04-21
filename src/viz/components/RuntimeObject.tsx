@@ -1,13 +1,24 @@
-import React, { useContext, useId } from "react";
+import React, { useContext, useEffect, useId, useRef } from "react";
 import { decimalAddressToHex, displayBytes } from "../../utils/utils";
 import { RuntimeObject as RuntimeObjectType } from "c-viz/lib/interpreter/object";
-import { getTypeName, isPointer } from "c-viz/lib/typing/types";
+import {
+  getTypeName,
+  isFunctionTypeInfo,
+  isObjectTypeInfo,
+  isPointer,
+} from "c-viz/lib/typing/types";
 import {
   displayValue,
   drawObjectInline,
   visualizeObject,
 } from "../../utils/object";
-import { BytesDisplayContext, EndiannessContext } from "../../App";
+import {
+  BytesDisplayContext,
+  EndiannessContext,
+  RuntimeViewContext,
+} from "../../App";
+import { SHRT_ALIGN } from "c-viz/lib/constants";
+import { Tooltip } from "bootstrap";
 
 interface RuntimeObjectProps {
   data: RuntimeObjectType;
@@ -19,19 +30,51 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
   const { size, alignment } = typeInfo;
   const value = displayValue(bytes, typeInfo, useContext(EndiannessContext));
   const bytesDisplayOpt = useContext(BytesDisplayContext);
-  const isMisaligned =
-    isPointer(typeInfo) && parseInt(value, 16) % typeInfo.alignment;
   const endianness = useContext(EndiannessContext);
+
+  const rt = useContext(RuntimeViewContext);
+  let isMisaligned = false;
+  let pointsToUnalloc = false;
+  if (isPointer(typeInfo)) {
+    const ptrValue = parseInt(value, 16);
+    const t = typeInfo.referencedType;
+    const alignment = isObjectTypeInfo(t)
+      ? t.alignment
+      : isFunctionTypeInfo(t)
+        ? SHRT_ALIGN
+        : 0;
+    isMisaligned = ptrValue % alignment > 0;
+    if (ptrValue && rt) pointsToUnalloc = !(ptrValue in rt.effectiveTypeTable);
+  }
+
+  const hasErr = isMisaligned || !initialized || pointsToUnalloc;
+  const tooltipRef = useRef(null);
+  useEffect(() => {
+    if (!tooltipRef.current || !hasErr) return;
+    new Tooltip(tooltipRef.current, {
+      title: !initialized
+        ? "uninitialized"
+        : isMisaligned
+          ? "unaligned pointer"
+          : pointsToUnalloc
+            ? "pointer to unallocated memory"
+            : "unknown error",
+      placement: "top",
+      trigger: "hover",
+    });
+  });
+
   return (
     <>
       <a
         href={"#" + id}
         className={
           "list-group-item list-group-item-action p-0" +
-          (isMisaligned || !initialized ? " list-group-item-danger" : "")
+          (hasErr ? " list-group-item-danger" : "")
         }
         data-bs-toggle="modal"
         style={{ position: "static" }}
+        ref={tooltipRef}
       >
         <div className={"px-2 py-1 "}>
           <div

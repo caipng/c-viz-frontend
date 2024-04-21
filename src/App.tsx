@@ -35,7 +35,7 @@ import { bytesToBigint } from "c-viz/lib/typing/representation";
 import { isScalarType, isSigned } from "c-viz/lib/typing/types";
 import Heap from "./viz/Heap";
 import "animate.css";
-import { Popover } from "bootstrap";
+import { Popover, Tooltip } from "bootstrap";
 import { Buffer } from "buffer";
 import ReactDOMServer from "react-dom/server";
 
@@ -143,12 +143,12 @@ function onIdxChange(
     if (addr === "NULL") return;
     const to = document.getElementById("" + addr);
     if (!to) {
-      elem.closest(".list-group-item")?.classList.add("list-group-item-danger");
+      // elem.closest(".list-group-item")?.classList.add("list-group-item-danger");
       return;
     }
-    elem
-      .closest(".list-group-item")
-      ?.classList.remove("list-group-item-danger");
+    // elem
+    //   .closest(".list-group-item")
+    //   ?.classList.remove("list-group-item-danger");
 
     if (instance.getConnections({ source: elem, target: to }).length) return;
     (instance.getConnections({ source: elem }) as Connection<any>[]).forEach(
@@ -228,6 +228,7 @@ function App() {
     React.useState<BytesDisplayOption>("hex");
   const [sample, setSample] = React.useState("");
   const popoverRef = useRef(null);
+  const redrawArrowTooltipRef = useRef(null);
 
   const onChange = React.useCallback((val: React.SetStateAction<string>) => {
     setCode(val);
@@ -245,6 +246,7 @@ function App() {
     setExitCode(undefined);
     setTimeTaken(0);
     setLoading(true);
+    instance.current?.select().deleteAll();
 
     const colors = [];
     for (let i = 0; i < 100; i++) colors.push(randomColor());
@@ -396,6 +398,13 @@ function App() {
         threshold: 0,
       },
     );
+
+    if (redrawArrowTooltipRef.current)
+      new Tooltip(redrawArrowTooltipRef.current, {
+        title: "Redraw arrows",
+        placement: "top",
+        trigger: "hover",
+      });
   }, []);
 
   useEffect(() => onIdxChange(instance.current, observer.current), [idx]);
@@ -511,6 +520,32 @@ function App() {
                     onClick={() => window.location.reload()}
                   >
                     Reset
+                  </button>
+                </div>
+                <div className="col px-1 align-self-center">
+                  <button
+                    className="btn btn-light"
+                    type="button"
+                    onClick={() => {
+                      instance.current?.select().deleteAll();
+                      onIdxChange(instance.current, observer.current);
+                    }}
+                    ref={redrawArrowTooltipRef}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-arrow-clockwise"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
+                      />
+                      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+                    </svg>
                   </button>
                 </div>
                 <div className="col px-1 align-self-center">
