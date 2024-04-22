@@ -10,11 +10,12 @@ const SliderLabel: React.FC<SliderLabelProps> = ({ tooltip }) => {
   const id = useId();
   useEffect(() => {
     if (!tooltipRef.current) return;
-    new Tooltip(tooltipRef.current, {
+    const t = new Tooltip(tooltipRef.current, {
       title: tooltip,
       placement: "bottom",
       trigger: "hover",
     });
+    return () => t.disable();
   });
   return (
     <a

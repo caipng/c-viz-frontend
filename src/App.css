@@ -8,10 +8,6 @@
   padding: 10px;
 }
 
-.viz > div {
-  height: 500px;
-}
-
 .code-highlight {
   display: inline;
   padding: 0.25em 0;

@@ -6,7 +6,8 @@ import Agenda from "./viz/Agenda";
 import "react18-json-view/src/style.css";
 import cviz from "c-viz";
 import { getErrorMessage, markField, randomColor } from "./utils/utils";
-import TextAndData from "./viz/TextAndData";
+import Text from "./viz/Text";
+import Data from "./viz/Data";
 import Stash from "./viz/Stash";
 import {
   BezierConnector,
@@ -73,6 +74,7 @@ async function drawReturnArrows(
   const to = document.querySelector(".mark-" + markIdx);
   // if (!to || !(await isVisible(to)) || !(await isVisible(elem))) return;
   if (!to) return;
+  if (instance.getConnections({ source: elem, target: to }).length) return;
   instance.connect({
     source: elem,
     target: to,
@@ -139,21 +141,15 @@ function onIdxChange(
   });
 
   canvas.querySelectorAll(".ptr-from").forEach((elem) => {
+    let to: HTMLElement | null = null;
     const addr = (elem as HTMLElement).dataset.address;
-    if (addr === "NULL") return;
-    const to = document.getElementById("" + addr);
-    if (!to) {
-      // elem.closest(".list-group-item")?.classList.add("list-group-item-danger");
+    if (addr !== "NULL") to = document.getElementById("" + addr);
+    if (to && instance.getConnections({ source: elem, target: to }).length)
       return;
-    }
-    // elem
-    //   .closest(".list-group-item")
-    //   ?.classList.remove("list-group-item-danger");
-
-    if (instance.getConnections({ source: elem, target: to }).length) return;
     (instance.getConnections({ source: elem }) as Connection<any>[]).forEach(
       (i) => instance.deleteConnection(i),
     );
+    if (!to) return;
 
     let wg = 0;
     const p1 = elem.closest(".animate__animated");
@@ -163,7 +159,7 @@ function onIdxChange(
       p1.addEventListener("animationend", (e) => {
         p1.classList.remove("animate__animated");
         wg--;
-        if (!wg) drawPtrArrow(instance, elem, to);
+        if (!wg && to) drawPtrArrow(instance, elem, to);
       });
     }
     if (p2) {
@@ -171,7 +167,7 @@ function onIdxChange(
       p2.addEventListener("animationend", (e) => {
         p2.classList.remove("animate__animated");
         wg--;
-        if (!wg) drawPtrArrow(instance, elem, to);
+        if (!wg && to) drawPtrArrow(instance, elem, to);
       });
     }
 
@@ -186,17 +182,18 @@ function onIdxChange(
 
   document.querySelectorAll(".return-inst").forEach((i) => {
     // if (isScrolledIntoView(i)) drawReturnArrows(i, instance);
-    observer.observe(i);
+    // observer.observe(i);
+    drawReturnArrows(i, instance);
   });
-  document.querySelectorAll(".mark-inst").forEach((i) => observer.observe(i));
+  // document.querySelectorAll(".mark-inst").forEach((i) => observer.observe(i));
 
-  canvas.querySelectorAll(".last-item").forEach((elem) =>
-    elem.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "start",
-    }),
-  );
+  // canvas.querySelectorAll(".last-item").forEach((elem) =>
+  //   elem.scrollIntoView({
+  //     behavior: "smooth",
+  //     block: "nearest",
+  //     inline: "start",
+  //   }),
+  // );
 
   instance.repaintEverything();
 }
@@ -357,9 +354,15 @@ function App() {
     });
     listManager.current = new JsPlumbListManager(instance.current);
 
-    const textAndDataList = document.getElementById("text-and-data-list");
-    if (textAndDataList)
-      listManager.current.addList(textAndDataList, {
+    const textList = document.getElementById("text-list");
+    if (textList)
+      listManager.current.addList(textList, {
+        endpoint: { type: "Dot", options: { cssClass: "red-endpoint" } },
+      });
+
+    const dataList = document.getElementById("data-list");
+    if (dataList)
+      listManager.current.addList(dataList, {
         endpoint: { type: "Dot", options: { cssClass: "red-endpoint" } },
       });
 
@@ -399,12 +402,18 @@ function App() {
       },
     );
 
+    let t: Tooltip;
     if (redrawArrowTooltipRef.current)
-      new Tooltip(redrawArrowTooltipRef.current, {
+      t = new Tooltip(redrawArrowTooltipRef.current, {
         title: "Redraw arrows",
         placement: "top",
         trigger: "hover",
       });
+
+    return () => {
+      p.current?.disable();
+      if (t) t.disable();
+    };
   }, []);
 
   useEffect(() => onIdxChange(instance.current, observer.current), [idx]);
@@ -926,7 +935,26 @@ function App() {
                 >
                   <div className="container-fluid">
                     <div className="row g-2">
+                      <div className="col-3 viz">
+                        <Stash
+                          stash={idx === undefined ? undefined : rts[idx].stash}
+                        />
+                      </div>
                       <div className="col-4 viz">
+                        <Text
+                          textAndData={
+                            idx === undefined ? undefined : rts[idx].textAndData
+                          }
+                        />
+                      </div>
+                      <div className="col-5 viz">
+                        <Data
+                          textAndData={
+                            idx === undefined ? undefined : rts[idx].textAndData
+                          }
+                        />
+                      </div>
+                      <div className="col-3 viz">
                         <Agenda
                           agenda={
                             idx === undefined ? undefined : rts[idx].agenda
@@ -938,25 +966,13 @@ function App() {
                           colors={randColors}
                         />
                       </div>
-                      <div className="col-3 viz">
-                        <Stash
-                          stash={idx === undefined ? undefined : rts[idx].stash}
-                        />
-                      </div>
                       <div className="col-5 viz">
-                        <TextAndData
-                          textAndData={
-                            idx === undefined ? undefined : rts[idx].textAndData
-                          }
-                        />
-                      </div>
-                      <div className="col-6 viz">
                         <Stack
                           stack={idx === undefined ? undefined : rts[idx].stack}
                           colors={randColors}
                         />
                       </div>
-                      <div className="col-6 viz">
+                      <div className="col-4 viz">
                         <Heap
                           heap={idx === undefined ? undefined : rts[idx].heap}
                         />

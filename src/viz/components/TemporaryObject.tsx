@@ -47,7 +47,7 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
   const tooltipRef = useRef(null);
   useEffect(() => {
     if (!tooltipRef.current || !hasErr) return;
-    new Tooltip(tooltipRef.current, {
+    const t = new Tooltip(tooltipRef.current, {
       title: isMisaligned
         ? "unaligned pointer"
         : pointsToUnalloc
@@ -56,6 +56,7 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
       placement: "top",
       trigger: "hover",
     });
+    return () => t.disable();
   });
 
   return (
@@ -77,7 +78,7 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
             className="font-monospace text-body-tertiary hstack"
             style={{ fontSize: "12px" }}
           >
-            <div>{getTypeName(typeInfo)}</div>
+            <div className="text-truncate">{getTypeName(typeInfo)}</div>
             <div className="vr mx-1"></div>
             <div className="text-truncate">
               {displayBytes(bytes, bytesDisplayOpt)}

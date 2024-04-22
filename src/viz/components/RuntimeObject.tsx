@@ -51,7 +51,7 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
   const tooltipRef = useRef(null);
   useEffect(() => {
     if (!tooltipRef.current || !hasErr) return;
-    new Tooltip(tooltipRef.current, {
+    const t = new Tooltip(tooltipRef.current, {
       title: !initialized
         ? "uninitialized"
         : isMisaligned
@@ -62,6 +62,7 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
       placement: "top",
       trigger: "hover",
     });
+    return () => t.disable();
   });
 
   return (
@@ -95,7 +96,7 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
               <h5 className="mb-0" style={{ display: "inline-block" }}>
                 {identifier}
               </h5>
-              <small className="mx-1">
+              <small className="mx-1 text-truncate">
                 <code>{getTypeName(typeInfo)}</code>
               </small>
             </div>

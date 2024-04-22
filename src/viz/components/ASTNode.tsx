@@ -31,6 +31,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, asLvalue }) => {
       e.addEventListener("hide.bs.modal", (event) => t.enable());
       e.addEventListener("show.bs.modal", (event) => t.disable());
     }
+    return () => t.disable();
   });
 
   return (
