@@ -235,6 +235,7 @@ function App() {
   }, []);
 
   const run = () => {
+    const start = Date.now();
     const rts: RuntimeView[] = [];
     const marks: Mark[] = [];
     let rt: Runtime | undefined;
@@ -252,7 +253,6 @@ function App() {
     for (let i = 0; i < 100; i++) colors.push(randomColor());
     setRandColors(colors);
 
-    const start = Date.now();
     try {
       rt = cviz.run(code, { endianness });
     } catch (err) {
@@ -449,6 +449,12 @@ function App() {
     });
   }, [code]);
 
+  const trySetIdx = (newIdx: number): void => {
+    newIdx = Math.min(rts.length - 1, Math.max(0, newIdx));
+    if (rts[newIdx] === undefined) return;
+    setIdx(newIdx);
+  };
+
   return (
     <>
       <div className="container text-center">
@@ -463,39 +469,195 @@ function App() {
         <hr />
         <div className="row g-1 my-5">
           <div className="col-4">
-            {idx !== undefined && (
-              <Box>
-                <MySlider
-                  step={1}
-                  marks={marks}
-                  min={0}
-                  max={rts.length - 1}
-                  valueLabelDisplay="on"
-                  value={idx}
-                  onChange={(event: Event, newValue: number | number[]) => {
-                    instance.current?.select().deleteAll();
-                    setIdx(newValue as number);
-                  }}
-                />
-                <div className="d-flex justify-content-center">
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary m-1"
-                    onClick={() => setIdx(idx - 1)}
-                    disabled={idx === 0}
+            {(error !== "" || exitCode !== undefined) && (
+              <div className="card shadow-sm rounded-3">
+                <div className="card-header d-flex align-items-center py-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="bi bi-braces-asterisk me-2"
+                    viewBox="0 0 16 16"
                   >
-                    {"Prev"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary m-1"
-                    onClick={() => setIdx(idx + 1)}
-                    disabled={idx === rts.length - 1}
-                  >
-                    {"Next"}
-                  </button>
+                    <path
+                      fill-rule="evenodd"
+                      d="M1.114 8.063V7.9c1.005-.102 1.497-.615 1.497-1.6V4.503c0-1.094.39-1.538 1.354-1.538h.273V2h-.376C2.25 2 1.49 2.759 1.49 4.352v1.524c0 1.094-.376 1.456-1.49 1.456v1.299c1.114 0 1.49.362 1.49 1.456v1.524c0 1.593.759 2.352 2.372 2.352h.376v-.964h-.273c-.964 0-1.354-.444-1.354-1.538V9.663c0-.984-.492-1.497-1.497-1.6M14.886 7.9v.164c-1.005.103-1.497.616-1.497 1.6v1.798c0 1.094-.39 1.538-1.354 1.538h-.273v.964h.376c1.613 0 2.372-.759 2.372-2.352v-1.524c0-1.094.376-1.456 1.49-1.456v-1.3c-1.114 0-1.49-.362-1.49-1.456V4.352C14.51 2.759 13.75 2 12.138 2h-.376v.964h.273c.964 0 1.354.444 1.354 1.538V6.3c0 .984.492 1.497 1.497 1.6M7.5 11.5V9.207l-1.621 1.621-.707-.707L6.792 8.5H4.5v-1h2.293L5.172 5.879l.707-.707L7.5 6.792V4.5h1v2.293l1.621-1.621.707.707L9.208 7.5H11.5v1H9.207l1.621 1.621-.707.707L8.5 9.208V11.5z"
+                    />
+                  </svg>
+                  <h5 className="my-0" style={{ display: "inline-block" }}>
+                    Result
+                  </h5>
                 </div>
-              </Box>
+                <div className="card-body">
+                  {idx !== undefined && (
+                    <>
+                      <Box>
+                        <div className="d-flex justify-content-center">
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary m-1"
+                            onClick={() => trySetIdx(idx - 5)}
+                            disabled={idx === 0}
+                          >
+                            {"<<"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary m-1"
+                            onClick={() => trySetIdx(idx - 1)}
+                            disabled={idx === 0}
+                          >
+                            {"Prev"}
+                          </button>
+                          <input
+                            className="form-control form-control-sm m-1"
+                            type="number"
+                            style={{ width: 65, height: 38 }}
+                            value={idx}
+                            onChange={(e) => {
+                              let newIdx;
+                              try {
+                                newIdx = parseInt(e.target.value);
+                              } catch (err) {
+                                return;
+                              }
+                              trySetIdx(newIdx);
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary m-1"
+                            onClick={() => trySetIdx(idx + 1)}
+                            disabled={idx === rts.length - 1}
+                          >
+                            {"Next"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary m-1"
+                            onClick={() => trySetIdx(idx + 5)}
+                            disabled={idx === rts.length - 1}
+                          >
+                            {">>"}
+                          </button>
+                        </div>
+                        <MySlider
+                          step={1}
+                          marks={marks}
+                          min={0}
+                          max={rts.length - 1}
+                          valueLabelDisplay="auto"
+                          value={idx}
+                          onChange={(
+                            event: Event,
+                            newValue: number | number[],
+                          ) => {
+                            instance.current?.select().deleteAll();
+                            setIdx(newValue as number);
+                          }}
+                        />
+                      </Box>
+                      <hr />
+                    </>
+                  )}
+                  <table className="table table-borderless table-sm caption-top">
+                    <tbody>
+                      <tr>
+                        <th scope="row" className="pe-2">
+                          Time Elapsed
+                        </th>
+                        <td>
+                          <samp>{timeTaken} ms</samp>
+                        </td>
+                        <th scope="row" className="px-2">
+                          Steps Generated
+                        </th>
+                        <td>
+                          <samp>{rts.length}</samp>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row" className="pe-2">
+                          Stack Memory Used
+                        </th>
+                        <td>
+                          <samp>
+                            {rts.length
+                              ? Math.max(...rts.map((i) => i.stackMemUsage))
+                              : "-"}{" "}
+                            byte(s)
+                          </samp>
+                        </td>
+                        <th scope="row" className="px-2">
+                          Heap Memory Used
+                        </th>
+                        <td>
+                          <samp>
+                            {rts.length
+                              ? Math.max(...rts.map((i) => i.heapMemUsage))
+                              : "-"}{" "}
+                            byte(s)
+                          </samp>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  {error !== "" && (
+                    <div
+                      className="alert alert-danger p-3 bg-danger-subtle"
+                      role="alert"
+                    >
+                      <div className="alert-heading d-flex align-items-center mb-0">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          className="bi bi-bug-fill flex-shrink-0 me-2"
+                          role="img"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M4.978.855a.5.5 0 1 0-.956.29l.41 1.352A5 5 0 0 0 3 6h10a5 5 0 0 0-1.432-3.503l.41-1.352a.5.5 0 1 0-.956-.29l-.291.956A5 5 0 0 0 8 1a5 5 0 0 0-2.731.811l-.29-.956z" />
+                          <path d="M13 6v1H8.5v8.975A5 5 0 0 0 13 11h.5a.5.5 0 0 1 .5.5v.5a.5.5 0 1 0 1 0v-.5a1.5 1.5 0 0 0-1.5-1.5H13V9h1.5a.5.5 0 0 0 0-1H13V7h.5A1.5 1.5 0 0 0 15 5.5V5a.5.5 0 0 0-1 0v.5a.5.5 0 0 1-.5.5zm-5.5 9.975V7H3V6h-.5a.5.5 0 0 1-.5-.5V5a.5.5 0 0 0-1 0v.5A1.5 1.5 0 0 0 2.5 7H3v1H1.5a.5.5 0 0 0 0 1H3v1h-.5A1.5 1.5 0 0 0 1 11.5v.5a.5.5 0 1 0 1 0v-.5a.5.5 0 0 1 .5-.5H3a5 5 0 0 0 4.5 4.975" />
+                        </svg>
+                        <strong>Error</strong>
+                      </div>
+                      <hr className="my-2" />
+                      <pre className="mb-0" style={{ whiteSpace: "pre-wrap" }}>
+                        {error.trim()}
+                      </pre>
+                    </div>
+                  )}
+                  {exitCode !== undefined && (
+                    <div
+                      className="alert alert-success p-3 bg-transparent"
+                      role="alert"
+                    >
+                      <div className="alert-heading d-flex align-items-center mb-0">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          fill="currentColor"
+                          className="bi bi-check-circle flex-shrink-0 me-2"
+                          role="img"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                          <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
+                        </svg>
+                        <pre
+                          className="mb-0"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        >
+                          Program exited with code {exitCode}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
             <br />
             <CodeMirror
@@ -597,78 +759,156 @@ function App() {
                 </div>
               </div>
             )}
-            {timeTaken > 0 && (
-              <pre className="my-2">Time elapsed: {timeTaken} ms</pre>
-            )}
-            {error !== "" && (
-              <pre
-                className="text-danger border border-danger p-2 my-3"
-                style={{
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                <strong>Error</strong>
-                <br />
-                {error}
-              </pre>
-            )}
-            {exitCode !== undefined && (
-              <pre
-                className="text-success border border-success p-2 my-3"
-                style={{
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                Program exited with code <strong>{exitCode}</strong>
-              </pre>
-            )}
-            <div className="container mt-4">
-              <h6>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  className="bi bi-gear-wide-connected me-2"
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z" />
-                </svg>
-                Settings
-              </h6>
-              <hr />
-              <div className="row row-cols-auto">
-                <div className="col">
-                  <div className="form-floating" style={{ width: 150 }}>
-                    <select
-                      className="form-select"
-                      id="endiannessSelect"
-                      onChange={(e) => {
-                        setIdx(undefined);
-                        setEndianness(e.target.value as Endianness);
-                      }}
-                      value={endianness}
-                    >
-                      <option value="little">Little</option>
-                      <option value="big">Big</option>
-                    </select>
-                    <label htmlFor="endiannessSelect">Endianness</label>
-                  </div>
+            <div className="mt-4">
+              <div className="card rounded-3 shadow-sm">
+                <div className="card-header py-3 d-flex align-items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="bi bi-gear-wide-connected me-2"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z" />
+                  </svg>
+                  <h5 className="my-0" style={{ display: "inline-block" }}>
+                    Settings
+                  </h5>
                 </div>
-                <div className="col">
-                  <div className="form-floating" style={{ width: 150 }}>
-                    <select
-                      className="form-select"
-                      id="bytesDisplaySelect"
-                      onChange={(e) =>
-                        setBytesDisplay(e.target.value as BytesDisplayOption)
-                      }
-                      value={bytesDisplay}
-                    >
-                      <option value="hex">Hexadecimal</option>
-                      <option value="binary">Binary</option>
-                    </select>
-                    <label htmlFor="bytesDisplaySelect">Bytes Display</label>
+                <div className="card-body">
+                  <h6 className="card-title mb-3">Hardware Architecture</h6>
+                  <div className="row row-cols-auto">
+                    <div className="col">
+                      <div className="form-floating" style={{ width: 120 }}>
+                        <select
+                          className="form-select"
+                          id="endiannessSelect"
+                          onChange={(e) => {
+                            setIdx(undefined);
+                            setEndianness(e.target.value as Endianness);
+                          }}
+                          value={endianness}
+                        >
+                          <option value="little">Little</option>
+                          <option value="big">Big</option>
+                        </select>
+                        <label htmlFor="endiannessSelect">Endianness</label>
+                      </div>
+                    </div>
+                    <div className="col">
+                      <div className="form-floating" style={{ width: 210 }}>
+                        <select
+                          className="form-select"
+                          id="signedSelect"
+                          value={"2c"}
+                          disabled
+                        >
+                          <option value="2c">Two's Complement</option>
+                          <option value="1c">One's Complement</option>
+                          <option value="sm">Sign & Magnitude</option>
+                        </select>
+                        <label htmlFor="signedSelect">
+                          Signed Representation
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <hr />
+                  <h6 className="card-title mb-3">Visualizer</h6>
+                  <div className="row row-cols-auto">
+                    <div className="col">
+                      <div className="form-floating" style={{ width: 150 }}>
+                        <select
+                          className="form-select"
+                          id="bytesDisplaySelect"
+                          onChange={(e) =>
+                            setBytesDisplay(
+                              e.target.value as BytesDisplayOption,
+                            )
+                          }
+                          value={bytesDisplay}
+                        >
+                          <option value="hex">Hexadecimal</option>
+                          <option value="binary">Binary</option>
+                        </select>
+                        <label htmlFor="bytesDisplaySelect">
+                          Bytes Display
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col">
+                      <div className="form-floating" style={{ width: 120 }}>
+                        <select
+                          className="form-select"
+                          id="arrowsSelect"
+                          value={"enabled"}
+                          disabled
+                        >
+                          <option value="enabled">Enabled</option>
+                          <option value="disabled">Disabled</option>
+                        </select>
+                        <label htmlFor="arrowsSelect">Arrows</label>
+                      </div>
+                    </div>
+                    <div className="col">
+                      <div className="form-floating" style={{ width: 130 }}>
+                        <select
+                          className="form-select"
+                          id="animationsSelect"
+                          value={"enabled"}
+                          disabled
+                        >
+                          <option value="enabled">Enabled</option>
+                          <option value="disabled">Disabled</option>
+                        </select>
+                        <label htmlFor="animationsSelect">Animations</label>
+                      </div>
+                    </div>
+                  </div>
+                  <hr />
+                  <h6 className="card-title mb-3">Undefined Behaviours</h6>
+                  <div>
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="UB1"
+                        checked
+                        disabled
+                      />
+                      <label className="form-check-label" htmlFor="UB1">
+                        Signed integer overflow
+                      </label>
+                    </div>
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="UB2"
+                        checked
+                        disabled
+                      />
+                      <label className="form-check-label" htmlFor="UB2">
+                        Strict aliasing
+                      </label>
+                    </div>
+                    <div className="form-check form-switch">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        id="UB3"
+                        checked
+                        disabled
+                      />
+                      <label className="form-check-label" htmlFor="UB3">
+                        <code>free</code> on address not returned by{" "}
+                        <code>malloc</code>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>

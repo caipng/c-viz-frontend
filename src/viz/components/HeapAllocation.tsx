@@ -45,8 +45,10 @@ const drawHeapContents = (
   if (cnt) res.push(f(cnt));
   return (
     <>
-      {res.map((i) => (
-        <div className="my-1">{i}</div>
+      {res.map((i, idx) => (
+        <div className="my-1" key={idx}>
+          {i}
+        </div>
       ))}
     </>
   );
