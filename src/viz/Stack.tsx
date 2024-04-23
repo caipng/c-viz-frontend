@@ -62,7 +62,7 @@ const Stack: React.FC<StackProps> = ({ stack, colors }) => {
                   >
                     {rt.functions[rt.functionCalls[k]][0]}
                   </small>
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, overflow: "hidden" }}>
                     <div
                       className="font-monospace m-0 text-body-secondary px-1 border-start"
                       style={{ fontSize: "12px" }}
@@ -122,7 +122,10 @@ const Stack: React.FC<StackProps> = ({ stack, colors }) => {
                               </div>
                             );
                           })}
-                          <div className="flex-grow-1">
+                          <div
+                            className="flex-grow-1"
+                            style={{ overflow: "hidden" }}
+                          >
                             {o ? (
                               <RuntimeObject key={identifier} data={o} />
                             ) : (

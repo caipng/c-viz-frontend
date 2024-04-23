@@ -85,8 +85,11 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
             </div>
           </div>
           <hr className="m-0" />
-          <div className="d-flex w-100 justify-content-between text-truncate">
-            <h5 className="mb-0" style={{ display: "inline-block" }}>
+          <div className="d-flex w-100 justify-content-between">
+            <h5
+              className="mb-0 text-truncate"
+              style={{ display: "inline-block", overflow: "hidden" }}
+            >
               {value}
             </h5>
           </div>

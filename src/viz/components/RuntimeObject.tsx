@@ -105,6 +105,7 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "flex-end",
+                overflow: "hidden",
               }}
             >
               <code className="mb-0 text-truncate">{value}</code>

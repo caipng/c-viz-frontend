@@ -56,16 +56,17 @@ const FunctionDesignator: React.FC<FunctionDesignatorProps> = ({
               <h5 className="mb-0" style={{ display: "inline-block" }}>
                 {identifier}
               </h5>
-              <small className="mx-1">
+              <small className="mx-1 text-truncate">
                 <code>{getTypeName(typeInfo)}</code>
               </small>
             </span>
             <code
-              className="mb-0"
+              className="mb-0 text-truncate"
               style={{
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "flex-end",
+                overflow: "hidden",
               }}
             >
               {"(" +

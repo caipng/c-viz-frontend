@@ -36,7 +36,7 @@ const Text: React.FC<TextProps> = ({ textAndData: xs }) => {
           </div>
         ) : (
           xs.map((d, i: Key) => {
-            if (!isFunctionDesignator(d)) return <></>;
+            if (!isFunctionDesignator(d)) return <span key={i}></span>;
             return (
               <span
                 className="animate__animated animate__slideInUp animate__faster"

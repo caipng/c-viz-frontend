@@ -51,7 +51,7 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, asLvalue }) => {
         }
       >
         <div className="d-flex w-100 justify-content-between">
-          <h6 className="mb-1">{type}</h6>
+          <h6 className="mb-1 text-truncate">{type}</h6>
           <span className="badge text-bg-light">
             <small>
               {start.line}:
