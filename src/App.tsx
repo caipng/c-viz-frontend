@@ -18,6 +18,9 @@ import {
   DotEndpoint,
   AnchorSpec,
   Connection,
+  ConnectorSpec,
+  FlowchartConnector,
+  StateMachineConnector,
 } from "@jsplumb/browser-ui";
 import Stack from "./viz/Stack";
 import Box from "@mui/material/Box";
@@ -44,9 +47,12 @@ const SAMPLES_DIR = "samples/";
 const samples: string[] = [
   "assign.c",
   "blocks.c",
+  "forward-decl.c",
   "heap.c",
+  "linked-list.c",
   "strict-aliasing.c",
   "struct.c",
+  "struct-init.c",
   "uninit.c",
 ];
 
@@ -65,6 +71,26 @@ interface Mark {
   value: number;
   label: any;
 }
+
+const connectorTypes: Record<string, ConnectorSpec> = {
+  Straight: StraightConnector.type,
+  "Straight + Stub": {
+    type: StraightConnector.type,
+    options: { stub: 10 },
+  },
+  Bezier: {
+    type: BezierConnector.type,
+    options: { curviness: 30 },
+  },
+  Flowchart: {
+    type: FlowchartConnector.type,
+    options: { cornerRadius: 10 },
+  },
+  StateMachine: {
+    type: StateMachineConnector.type,
+    options: { curviness: 15, proximityLimit: 5 },
+  },
+};
 
 async function drawReturnArrows(
   elem: Element,
@@ -97,6 +123,7 @@ function drawPtrArrow(
   instance: BrowserJsPlumbInstance,
   from: Element,
   to: Element,
+  connector: ConnectorSpec,
 ) {
   let toAnchor: AnchorSpec;
   if (to.classList.contains("list-group-item"))
@@ -108,11 +135,7 @@ function drawPtrArrow(
   instance.connect({
     source: from,
     target: to,
-    connector: StraightConnector.type,
-    //{
-    //type: BezierConnector.type,
-    //options: { curviness: 30 },
-    //},
+    connector,
     anchors: ["Center", toAnchor],
     endpoints: [{ type: DotEndpoint.type, options: { radius: 3 } }, "Blank"],
     overlays: [
@@ -124,20 +147,23 @@ function drawPtrArrow(
 function onIdxChange(
   instance: BrowserJsPlumbInstance | undefined,
   observer: IntersectionObserver | undefined,
+  connector: ConnectorSpec,
 ) {
   const canvas = document.getElementById("canvas");
   if (!canvas || !instance || !observer) return;
 
   instance.select().each((i) => {
-    if (document.body.contains(i.source) && document.body.contains(i.target)) {
-      if (
-        i.source.classList.contains("list-group") &&
-        i.target.classList.contains("list-group")
-      )
-        instance.deleteConnection(i);
-    } else {
-      instance.deleteConnection(i);
+    if (
+      document.body.contains(i.source) &&
+      document.body.contains(i.target) &&
+      i.source.classList.contains("ptr-from")
+    ) {
+      const addr = (i.source as HTMLElement).dataset.address;
+      if (i.target.classList.contains("list-group") || i.target.id === addr)
+        return;
     }
+
+    instance.deleteConnection(i);
   });
 
   canvas.querySelectorAll(".ptr-from").forEach((elem) => {
@@ -159,7 +185,7 @@ function onIdxChange(
       p1.addEventListener("animationend", (e) => {
         p1.classList.remove("animate__animated");
         wg--;
-        if (!wg && to) drawPtrArrow(instance, elem, to);
+        if (!wg && to) drawPtrArrow(instance, elem, to, connector);
       });
     }
     if (p2) {
@@ -167,11 +193,11 @@ function onIdxChange(
       p2.addEventListener("animationend", (e) => {
         p2.classList.remove("animate__animated");
         wg--;
-        if (!wg && to) drawPtrArrow(instance, elem, to);
+        if (!wg && to) drawPtrArrow(instance, elem, to, connector);
       });
     }
 
-    if (!wg) drawPtrArrow(instance, elem, to);
+    if (!wg) drawPtrArrow(instance, elem, to, connector);
   });
 
   document.querySelectorAll(".animate__animated").forEach((i) =>
@@ -223,6 +249,8 @@ function App() {
   const [endianness, setEndianness] = React.useState<Endianness>("little");
   const [bytesDisplay, setBytesDisplay] =
     React.useState<BytesDisplayOption>("hex");
+  const [arrowStyle, setArrowStyle] =
+    React.useState<keyof typeof connectorTypes>("StateMachine");
   const [sample, setSample] = React.useState("");
   const popoverRef = useRef(null);
   const redrawArrowTooltipRef = useRef(null);
@@ -416,7 +444,20 @@ function App() {
     };
   }, []);
 
-  useEffect(() => onIdxChange(instance.current, observer.current), [idx]);
+  useEffect(
+    () =>
+      onIdxChange(
+        instance.current,
+        observer.current,
+        connectorTypes[arrowStyle],
+      ),
+    [idx, arrowStyle],
+  );
+
+  useEffect(() => {
+    instance.current?.select().deleteAll();
+    onIdxChange(instance.current, observer.current, connectorTypes[arrowStyle]);
+  }, [arrowStyle]);
 
   useEffect(() => {
     if (!samples.includes(sample)) return;
@@ -699,7 +740,11 @@ function App() {
                     type="button"
                     onClick={() => {
                       instance.current?.select().deleteAll();
-                      onIdxChange(instance.current, observer.current);
+                      onIdxChange(
+                        instance.current,
+                        observer.current,
+                        connectorTypes[arrowStyle],
+                      );
                     }}
                     ref={redrawArrowTooltipRef}
                   >
@@ -787,8 +832,8 @@ function App() {
                 </div>
                 <div className="card-body">
                   <h6 className="card-title mb-3">Hardware Architecture</h6>
-                  <div className="row row-cols-auto">
-                    <div className="col">
+                  <div className="row row-cols-auto px-2">
+                    <div className="col p-1">
                       <div className="form-floating" style={{ width: 120 }}>
                         <select
                           className="form-select"
@@ -805,7 +850,7 @@ function App() {
                         <label htmlFor="endiannessSelect">Endianness</label>
                       </div>
                     </div>
-                    <div className="col">
+                    <div className="col p-1">
                       <div className="form-floating" style={{ width: 210 }}>
                         <select
                           className="form-select"
@@ -825,8 +870,8 @@ function App() {
                   </div>
                   <hr />
                   <h6 className="card-title mb-3">Visualizer</h6>
-                  <div className="row row-cols-auto">
-                    <div className="col">
+                  <div className="row row-cols-auto px-2">
+                    <div className="col p-1">
                       <div className="form-floating" style={{ width: 150 }}>
                         <select
                           className="form-select"
@@ -846,7 +891,7 @@ function App() {
                         </label>
                       </div>
                     </div>
-                    <div className="col">
+                    <div className="col p-1">
                       <div className="form-floating" style={{ width: 120 }}>
                         <select
                           className="form-select"
@@ -860,7 +905,28 @@ function App() {
                         <label htmlFor="arrowsSelect">Arrows</label>
                       </div>
                     </div>
-                    <div className="col">
+                    <div className="col p-1">
+                      <div className="form-floating" style={{ width: 165 }}>
+                        <select
+                          className="form-select"
+                          id="arrowStyleSelect"
+                          value={arrowStyle}
+                          onChange={(e) => {
+                            setArrowStyle(
+                              e.target.value as keyof typeof connectorTypes,
+                            );
+                          }}
+                        >
+                          {Object.keys(connectorTypes).map((k, i) => (
+                            <option value={k} key={i}>
+                              {k}
+                            </option>
+                          ))}
+                        </select>
+                        <label htmlFor="arrowStyleSelect">Arrow Style</label>
+                      </div>
+                    </div>
+                    <div className="col p-1">
                       <div className="form-floating" style={{ width: 130 }}>
                         <select
                           className="form-select"
