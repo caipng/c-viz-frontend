@@ -11,6 +11,12 @@ import {
   isMarkInstruction,
   isReturnInstruction,
 } from "c-viz/lib/interpreter/instructions";
+import { isBreakMarkInstruction } from "c-viz/lib/interpreter/instructions";
+import { isContinueMarkInstruction } from "c-viz/lib/interpreter/instructions";
+import {
+  isJumpStatementBreak,
+  isJumpStatementContinue,
+} from "c-viz/lib/ast/types";
 
 interface AgendaProps {
   agenda: AgendaItem[] | undefined;
@@ -25,7 +31,9 @@ const Agenda: React.FC<AgendaProps> = ({
   view,
   colors,
 }) => {
-  let markIdx = 0;
+  let rmarkIdx = 0,
+    bmarkIdx = 0,
+    cmarkIdx = 0;
   return (
     <div className="card" id="agenda-card">
       <div className="card-header text-center py-0">
@@ -62,9 +70,31 @@ const Agenda: React.FC<AgendaProps> = ({
                   <div
                     key={k}
                     className={
-                      isLast
+                      (isLast
                         ? "last-item border border-2 border-primary-subtle animate__animated animate__pulse animate__faster"
-                        : ""
+                        : "") +
+                      (isJumpStatementBreak(i) ? " break-inst" : "") +
+                      (isJumpStatementContinue(i) ? " continue-inst" : "")
+                    }
+                    data-mark={
+                      isJumpStatementBreak(i)
+                        ? bmarkIdx
+                        : isJumpStatementContinue(i)
+                          ? cmarkIdx
+                          : null
+                    }
+                    style={
+                      isJumpStatementBreak(i)
+                        ? {
+                            backgroundColor:
+                              colors[(23 * bmarkIdx) % colors.length],
+                          }
+                        : isJumpStatementContinue(i)
+                          ? {
+                              backgroundColor:
+                                colors[(73 * cmarkIdx) % colors.length],
+                            }
+                          : {}
                     }
                   >
                     <div
@@ -80,7 +110,9 @@ const Agenda: React.FC<AgendaProps> = ({
                   </div>
                 );
               if (isInstruction(i)) {
-                if (isMarkInstruction(i)) markIdx++;
+                if (isMarkInstruction(i)) rmarkIdx++;
+                if (isBreakMarkInstruction(i)) bmarkIdx++;
+                if (isContinueMarkInstruction(i)) cmarkIdx++;
                 return (
                   <span
                     key={k}
@@ -90,16 +122,32 @@ const Agenda: React.FC<AgendaProps> = ({
                         ? " border-2 border-primary-subtle last-item "
                         : "") +
                       (isMarkInstruction(i)
-                        ? " mark-inst mark-" + markIdx
+                        ? " mark-inst rmark-" + rmarkIdx
+                        : "") +
+                      (isBreakMarkInstruction(i)
+                        ? " mark-inst bmark-" + bmarkIdx
+                        : "") +
+                      (isContinueMarkInstruction(i)
+                        ? " mark-inst cmark-" + cmarkIdx
                         : "") +
                       (isReturnInstruction(i) ? " return-inst" : "") +
                       (isLvalue ? " bg-warning bg-opacity-25" : "")
                     }
-                    data-mark={isReturnInstruction(i) ? markIdx : null}
+                    data-mark={isReturnInstruction(i) ? rmarkIdx : null}
                     style={
                       isMarkInstruction(i) || isReturnInstruction(i)
-                        ? { backgroundColor: colors[markIdx % colors.length] }
-                        : {}
+                        ? { backgroundColor: colors[rmarkIdx % colors.length] }
+                        : isBreakMarkInstruction(i)
+                          ? {
+                              backgroundColor:
+                                colors[(23 * bmarkIdx) % colors.length],
+                            }
+                          : isContinueMarkInstruction(i)
+                            ? {
+                                backgroundColor:
+                                  colors[(73 * cmarkIdx) % colors.length],
+                              }
+                            : {}
                     }
                   >
                     <Instruction inst={i} />

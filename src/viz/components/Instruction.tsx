@@ -43,7 +43,10 @@ const instructions: {
     displayName: "Branch",
     helperText:
       "Pushes the corresponding expression onto the control based on the value on top of the stash",
-    displayArgs: (i) => [i.exprIfTrue.src, i.exprIfFalse.src],
+    displayArgs: (i) => [
+      i.exprIfTrue.src,
+      i.exprIfFalse ? i.exprIfFalse.src : "-",
+    ],
   },
   [InstructionType.CALL]: {
     displayName: "Call",
@@ -102,6 +105,28 @@ const instructions: {
     helperText: "Exits the current block",
     displayArgs: (i) => [],
   },
+  [InstructionType.WHILE]: {
+    displayName: "While Loop",
+    helperText:
+      "Pushes another iteration of the loop if the top of the stash has non-zero value",
+    displayArgs: (i) => [i.body.src],
+  },
+  [InstructionType.FOR]: {
+    displayName: "For Loop",
+    helperText:
+      "Pushes another iteration of the loop if the top of the stash has non-zero value",
+    displayArgs: (i) => [i.body.src],
+  },
+  [InstructionType.BREAK_MARK]: {
+    displayName: "Break Mark",
+    helperText: "Marks address for break",
+    displayArgs: (i) => [],
+  },
+  [InstructionType.CONTINUE_MARK]: {
+    displayName: "Continue Mark",
+    helperText: "Marks address for continue",
+    displayArgs: (i) => [],
+  },
 };
 
 const Instruction: React.FC<InstructionProps> = ({ inst }) => {
@@ -115,7 +140,7 @@ const Instruction: React.FC<InstructionProps> = ({ inst }) => {
             {displayName}
           </abbr>
         </div>
-        <div className="d-flex fill-flex">
+        <div className="d-flex fill-flex" style={{ overflow: "hidden" }}>
           {args.length === 0 ||
             args.map((s, i) => (
               <code

@@ -50,6 +50,7 @@ const samples: string[] = [
   "forward-decl.c",
   "heap.c",
   "linked-list.c",
+  "loops.c",
   "strict-aliasing.c",
   "struct.c",
   "struct-init.c",
@@ -94,12 +95,10 @@ const connectorTypes: Record<string, ConnectorSpec> = {
 
 async function drawReturnArrows(
   elem: Element,
+  to: Element,
   instance: BrowserJsPlumbInstance,
 ) {
-  const markIdx = (elem as HTMLElement).dataset.mark;
-  const to = document.querySelector(".mark-" + markIdx);
   // if (!to || !(await isVisible(to)) || !(await isVisible(elem))) return;
-  if (!to) return;
   if (instance.getConnections({ source: elem, target: to }).length) return;
   instance.connect({
     source: elem,
@@ -209,8 +208,26 @@ function onIdxChange(
   document.querySelectorAll(".return-inst").forEach((i) => {
     // if (isScrolledIntoView(i)) drawReturnArrows(i, instance);
     // observer.observe(i);
-    drawReturnArrows(i, instance);
+    const markIdx = (i as HTMLElement).dataset.mark;
+    const to = document.querySelector(".rmark-" + markIdx);
+    if (!to) return;
+    drawReturnArrows(i, to, instance);
   });
+
+  document.querySelectorAll(".break-inst").forEach((i) => {
+    const markIdx = (i as HTMLElement).dataset.mark;
+    const to = document.querySelector(".bmark-" + markIdx);
+    if (!to) return;
+    drawReturnArrows(i, to, instance);
+  });
+
+  document.querySelectorAll(".continue-inst").forEach((i) => {
+    const markIdx = (i as HTMLElement).dataset.mark;
+    const to = document.querySelector(".cmark-" + markIdx);
+    if (!to) return;
+    drawReturnArrows(i, to, instance);
+  });
+
   // document.querySelectorAll(".mark-inst").forEach((i) => observer.observe(i));
 
   // canvas.querySelectorAll(".last-item").forEach((elem) =>
@@ -233,7 +250,7 @@ function onScroll(
     return instance.deleteConnectionsForElement(entry.target);
   if (entry.target.classList.contains("mark-inst")) return;
 
-  drawReturnArrows(entry.target, instance);
+  // drawReturnArrows(entry.target, instance);
 }
 
 function App() {

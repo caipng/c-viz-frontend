@@ -1,16 +1,14 @@
-int f() {
-    int a = -1;
-    return -1;
+void f() {
+    unsigned long long a = -1;
+    return;
 }
 
-int g() {
-    char c = 'x';
-    return 1;
+void g() {
+    int a, b;
+    return;
 }
 
 int main() {
-    f();
-    g();
     f();
     g();
 }
