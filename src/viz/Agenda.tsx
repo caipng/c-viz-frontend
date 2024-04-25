@@ -150,7 +150,7 @@ const Agenda: React.FC<AgendaProps> = ({
                             : {}
                     }
                   >
-                    <Instruction inst={i} />
+                    <Instruction inst={i} isLvalue={isLvalue} />
                   </span>
                 );
               }

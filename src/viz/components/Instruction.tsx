@@ -4,13 +4,15 @@ import {
 } from "c-viz/lib/interpreter/instructions";
 import { isFunctionDesignator } from "c-viz/lib/interpreter/stash";
 import { getTypeName } from "c-viz/lib/typing/types";
-import React, { ReactNode, useContext } from "react";
+import React, { ReactNode, useContext, useEffect, useRef } from "react";
 import { displayValue } from "../../utils/object";
 import { Endianness } from "c-viz/lib/config";
 import { EndiannessContext } from "../../App";
+import { Tooltip } from "bootstrap";
 
 interface InstructionProps {
   inst: Inst;
+  isLvalue: boolean;
 }
 
 const instructions: {
@@ -129,11 +131,21 @@ const instructions: {
   },
 };
 
-const Instruction: React.FC<InstructionProps> = ({ inst }) => {
+const Instruction: React.FC<InstructionProps> = ({ inst, isLvalue }) => {
   const { displayName, helperText, displayArgs } = instructions[inst.type];
   const args = displayArgs(inst as any, useContext(EndiannessContext));
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !isLvalue) return;
+    const t = new Tooltip(ref.current, {
+      title: "Evaluate as lvalue",
+      placement: "top",
+      trigger: "hover",
+    });
+    return () => t.disable();
+  });
   return (
-    <div className="py-1 px-2">
+    <div className="py-1 px-2" ref={ref}>
       <div className="d-flex w-100 justify-content-between">
         <div className="mb-0 fill-flex">
           <abbr title={helperText} className="initialism">

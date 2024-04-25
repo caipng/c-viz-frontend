@@ -26,12 +26,23 @@ const ASTNode: React.FC<ASTNodeProps> = ({ node, view, asLvalue }) => {
       trigger: "hover",
       html: true,
     });
+    let t2: Tooltip | null = null;
+    if (asLvalue) {
+      t2 = new Tooltip(tooltipRef.current, {
+        title: "Evaluate as lvalue",
+        placement: "top",
+        trigger: "hover",
+      });
+    }
     const e = document.getElementById(id);
     if (e) {
       e.addEventListener("hide.bs.modal", (event) => t.enable());
       e.addEventListener("show.bs.modal", (event) => t.disable());
     }
-    return () => t.disable();
+    return () => {
+      t.disable();
+      if (t2) t2.disable();
+    };
   });
 
   return (
