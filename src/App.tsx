@@ -131,7 +131,7 @@ function drawPtrArrow(
       [0.95, 0.5, 1, 0],
     ];
   else toAnchor = { type: "Perimeter", options: { shape: "Rectangle" } };
-  instance.connect({
+  const conn = instance.connect({
     source: from,
     target: to,
     connector,
@@ -140,6 +140,12 @@ function drawPtrArrow(
     overlays: [
       { type: "Arrow", options: { location: 1, width: 16, length: 10 } },
     ],
+  });
+  from.closest(".list-group-item")?.addEventListener("mouseover", () => {
+    conn.addClass("arrow-hover");
+  });
+  from.closest(".list-group-item")?.addEventListener("mouseout", () => {
+    conn.removeClass("arrow-hover");
   });
 }
 

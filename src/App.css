@@ -44,7 +44,8 @@
   animation-duration: 1s;
 }
 
-.jtk-connector:hover {
+.jtk-connector:hover,
+.arrow-hover {
   filter: invert(57%) sepia(27%) saturate(2041%) hue-rotate(349deg)
     brightness(95%) contrast(88%);
 }
