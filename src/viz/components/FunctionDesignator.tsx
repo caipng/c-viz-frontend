@@ -38,7 +38,8 @@ const FunctionDesignator: React.FC<FunctionDesignatorProps> = ({
           "list-group-item list-group-item-action p-0" +
           (isLast ? " border-2 border-primary-subtle last-item" : "")
         }
-        data-bs-toggle="modal"
+        data-bs-toggle="offcanvas"
+        role="button"
         id={"0x" + decimalAddressToHex(address)}
       >
         <div className={"px-2 py-1 border-start border-2 border-dark-subtle"}>
@@ -78,65 +79,67 @@ const FunctionDesignator: React.FC<FunctionDesignatorProps> = ({
           </div>
         </div>
       </a>
-      <div className="modal fade" id={id} tabIndex={-1} aria-hidden="true">
-        <div className="modal-dialog modal-xl">
-          <div className="modal-content">
-            <div className="modal-header py-2">
-              <h1 className="modal-title fs-5">{identifier}</h1>
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="modal-body py-2 px-3">
-              <table className="table m-0 align-middle table-sm">
-                <tbody>
-                  <tr>
-                    <th scope="row">Type</th>
-                    <td className="w-75">{getTypeName(typeInfo)}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Identifier</th>
-                    <td className="w-75">{identifier}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Address</th>
-                    <td className="w-75">0x{decimalAddressToHex(address)}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Return Type</th>
-                    <td className="w-75">{getTypeName(returnType)}</td>
-                  </tr>
-                  {parameterTypes.map((t, i: number) => (
-                    <tr key={i}>
-                      <th scope="row">{"Parameter " + (i + 1)}</th>
-                      <td className="w-75">
-                        {t.identifier}
-                        <small className="mx-1">
-                          <code>{getTypeName(t.type)}</code>
-                        </small>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <th scope="row" className="text-center align-top pt-3">
-                      Source
-                    </th>
-                    <td className="py-2">
-                      <CodeMirror
-                        value={fnSource}
-                        extensions={[cpp()]}
-                        readOnly={true}
-                        basicSetup={{ lineNumbers: false }}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <div
+        className="offcanvas offcanvas-start shadow-lg"
+        data-bs-backdrop="false"
+        id={id}
+        tabIndex={-1}
+        style={{ width: "auto", maxWidth: 888 }}
+      >
+        <div className="offcanvas-header border-bottom">
+          <h1 className="offcanvas-title fs-5">{identifier}</h1>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="offcanvas-body px-3 py-0 hide-scroll">
+          <table className="table m-0 align-middle table-sm">
+            <tbody>
+              <tr>
+                <th scope="row">Type</th>
+                <td className="w-75">{getTypeName(typeInfo)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Identifier</th>
+                <td className="w-75">{identifier}</td>
+              </tr>
+              <tr>
+                <th scope="row">Address</th>
+                <td className="w-75">0x{decimalAddressToHex(address)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Return Type</th>
+                <td className="w-75">{getTypeName(returnType)}</td>
+              </tr>
+              {parameterTypes.map((t, i: number) => (
+                <tr key={i}>
+                  <th scope="row">{"Parameter " + (i + 1)}</th>
+                  <td className="w-75">
+                    {t.identifier}
+                    <small className="mx-1">
+                      <code>{getTypeName(t.type)}</code>
+                    </small>
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <th scope="row" className="text-center align-top pt-3">
+                  Source
+                </th>
+                <td className="py-2">
+                  <CodeMirror
+                    value={fnSource}
+                    extensions={[cpp()]}
+                    readOnly={true}
+                    basicSetup={{ lineNumbers: false }}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </>
