@@ -275,6 +275,8 @@ function App() {
   const [arrowStyle, setArrowStyle] =
     React.useState<keyof typeof connectorTypes>("StateMachine");
   const [sample, setSample] = React.useState("");
+  const [skipStrictAliasingCheck, setSkipStrictAliasingCheck] =
+    React.useState(false);
   const popoverRef = useRef(null);
   const redrawArrowTooltipRef = useRef(null);
 
@@ -302,7 +304,7 @@ function App() {
     setRandColors(colors);
 
     try {
-      rt = cviz.run(code, { endianness });
+      rt = cviz.run(code, { endianness, UB: { skipStrictAliasingCheck } });
     } catch (err) {
       console.error(err);
       setTimeTaken(Date.now() - start);
@@ -986,8 +988,10 @@ function App() {
                         type="checkbox"
                         role="switch"
                         id="UB2"
-                        checked
-                        disabled
+                        checked={!skipStrictAliasingCheck}
+                        onChange={(e) =>
+                          setSkipStrictAliasingCheck(!e.target.checked)
+                        }
                       />
                       <label className="form-check-label" htmlFor="UB2">
                         Strict aliasing

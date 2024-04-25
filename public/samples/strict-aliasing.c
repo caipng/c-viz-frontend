@@ -7,5 +7,5 @@ int foo (int *p1, short *p2) {
 int a = 10;
 
 int main() {
-    foo(&a, (short *) &a);
+    return foo(&a, (short *) &a);
 }
