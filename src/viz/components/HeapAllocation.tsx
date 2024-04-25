@@ -59,7 +59,10 @@ const HeapAllocation: React.FC<HeapAllocationProps> = ({ size, address }) => {
   const rt = useContext(RuntimeViewContext);
   if (!rt) return <></>;
   return (
-    <div className="list-group-item p-0">
+    <div
+      className="list-group-item p-0 heap-allocation"
+      data-addr={"0x" + decimalAddressToHex(address)}
+    >
       <div className="p-2">
         <div
           className="font-monospace text-body-tertiary"

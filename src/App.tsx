@@ -171,10 +171,15 @@ function onIdxChange(
     instance.deleteConnection(i);
   });
 
+  const pointedTo: Record<string, boolean> = {};
   canvas.querySelectorAll(".ptr-from").forEach((elem) => {
     let to: HTMLElement | null = null;
     const addr = (elem as HTMLElement).dataset.address;
-    if (addr !== "NULL") to = document.getElementById("" + addr);
+
+    if (addr && addr !== "NULL") {
+      pointedTo[addr] = true;
+      to = document.getElementById("" + addr);
+    }
     if (to && instance.getConnections({ source: elem, target: to }).length)
       return;
     (instance.getConnections({ source: elem }) as Connection<any>[]).forEach(
@@ -203,6 +208,13 @@ function onIdxChange(
     }
 
     if (!wg) drawPtrArrow(instance, elem, to, connector);
+  });
+
+  canvas.querySelectorAll(".heap-allocation").forEach((elem) => {
+    const addr = (elem as HTMLElement).dataset.addr;
+    if (addr === undefined) return;
+    if (addr in pointedTo) elem.classList.remove("list-group-item-danger");
+    else elem.classList.add("list-group-item-danger");
   });
 
   document.querySelectorAll(".animate__animated").forEach((i) =>
