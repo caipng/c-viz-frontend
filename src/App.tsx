@@ -544,6 +544,108 @@ function App() {
         <hr />
         <div className="row g-1 my-5">
           <div className="col-4">
+            <CodeMirror
+              value={code}
+              height="500px"
+              extensions={[cpp(), markField]}
+              onChange={onChange}
+              onCreateEditor={(view, state) => (viewRef.current = view)}
+            />
+            <div className="container text-center my-3">
+              <div className="row row-cols-auto justify-content-center">
+                <div className="col px-1">
+                  <button type="button" className="btn btn-dark" onClick={run}>
+                    Run
+                  </button>
+                </div>
+                <div className="col px-1">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => window.location.reload()}
+                  >
+                    Reset
+                  </button>
+                </div>
+                <div className="col px-1 align-self-center">
+                  <button
+                    className="btn btn-light"
+                    type="button"
+                    onClick={() => {
+                      instance.current?.select().deleteAll();
+                      onIdxChange(
+                        instance.current,
+                        observer.current,
+                        connectorTypes[arrowStyle],
+                      );
+                    }}
+                    ref={redrawArrowTooltipRef}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-arrow-clockwise"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
+                      />
+                      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="col px-1 align-self-center">
+                  <div className="input-group" style={{ width: 250 }}>
+                    <label className="input-group-text" htmlFor="sample-select">
+                      Sample
+                    </label>
+                    <select
+                      className="form-select"
+                      id="sample-select"
+                      value={sample}
+                      onChange={(e) => setSample(e.target.value)}
+                    >
+                      <option value="">Choose..</option>
+                      {samples.map((file) => (
+                        <option value={file} key={file}>
+                          {file}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="col px-1 align-self-center">
+                  <button
+                    className="btn btn-light"
+                    type="button"
+                    ref={popoverRef}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      className="bi bi-link-45deg mx-1"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z" />
+                      <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z" />
+                    </svg>
+                    Link
+                  </button>
+                </div>
+              </div>
+            </div>
+            {loading && (
+              <div className="text-center">
+                <div className="spinner-border my-5" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
             {(error !== "" || exitCode !== undefined) && (
               <div className="card shadow-sm rounded-3">
                 <div className="card-header d-flex align-items-center py-3">
@@ -731,114 +833,20 @@ function App() {
                       </div>
                     </div>
                   )}
+                  {idx !== undefined && rts[idx].stdout !== "" && (
+                    <div className="card">
+                      <div className="card-body">
+                        <pre className="mb-0">
+                          <strong>Print Output</strong>
+                          {"\n" + rts[idx].stdout.trim()}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
-            <br />
-            <CodeMirror
-              value={code}
-              height="500px"
-              extensions={[cpp(), markField]}
-              onChange={onChange}
-              onCreateEditor={(view, state) => (viewRef.current = view)}
-            />
-            <br />
-            <div className="container text-center my-1 mb-5">
-              <div className="row row-cols-auto justify-content-center">
-                <div className="col px-1">
-                  <button type="button" className="btn btn-dark" onClick={run}>
-                    Run
-                  </button>
-                </div>
-                <div className="col px-1">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => window.location.reload()}
-                  >
-                    Reset
-                  </button>
-                </div>
-                <div className="col px-1 align-self-center">
-                  <button
-                    className="btn btn-light"
-                    type="button"
-                    onClick={() => {
-                      instance.current?.select().deleteAll();
-                      onIdxChange(
-                        instance.current,
-                        observer.current,
-                        connectorTypes[arrowStyle],
-                      );
-                    }}
-                    ref={redrawArrowTooltipRef}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-arrow-clockwise"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"
-                      />
-                      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="col px-1 align-self-center">
-                  <div className="input-group" style={{ width: 250 }}>
-                    <label className="input-group-text" htmlFor="sample-select">
-                      Sample
-                    </label>
-                    <select
-                      className="form-select"
-                      id="sample-select"
-                      value={sample}
-                      onChange={(e) => setSample(e.target.value)}
-                    >
-                      <option value="">Choose..</option>
-                      {samples.map((file) => (
-                        <option value={file} key={file}>
-                          {file}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="col px-1 align-self-center">
-                  <button
-                    className="btn btn-light"
-                    type="button"
-                    ref={popoverRef}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-link-45deg mx-1"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z" />
-                      <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z" />
-                    </svg>
-                    Link
-                  </button>
-                </div>
-              </div>
-            </div>
-            {loading && (
-              <div className="text-center">
-                <div className="spinner-border my-5" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            )}
-            <div className="mt-4">
+            <div className="mt-2">
               <div className="card rounded-3 shadow-sm">
                 <div className="card-header py-3 d-flex align-items-center">
                   <svg
