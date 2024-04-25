@@ -59,8 +59,8 @@ const HeapAllocation: React.FC<HeapAllocationProps> = ({ size, address }) => {
   const rt = useContext(RuntimeViewContext);
   if (!rt) return <></>;
   return (
-    <a href={"#" + id} className="list-group-item list-group-item-action p-0">
-      <div className="px-2 py-1">
+    <div className="list-group-item p-0">
+      <div className="p-2">
         <div
           className="font-monospace text-body-tertiary"
           style={{ fontSize: "12px", fontWeight: "bold" }}
@@ -75,7 +75,7 @@ const HeapAllocation: React.FC<HeapAllocationProps> = ({ size, address }) => {
           {drawHeapContents(address, size, rt)}
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 
