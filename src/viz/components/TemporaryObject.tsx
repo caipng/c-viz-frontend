@@ -6,7 +6,7 @@ import {
   isPointer,
 } from "c-viz/lib/typing/types";
 import React, { useContext, useEffect, useId, useRef } from "react";
-import { displayBytes } from "../../utils/utils";
+import { asArrayBuffer, displayBytes } from "../../utils/utils";
 import { displayValue, visualizeObject } from "../../utils/object";
 import {
   BytesDisplayContext,
@@ -15,6 +15,7 @@ import {
 } from "../../App";
 import { SHRT_ALIGN } from "c-viz/lib/constants";
 import { Tooltip } from "bootstrap";
+import { HexEditor } from "hex-editor-react";
 
 interface TemporaryObjectProps {
   data: TemporaryObjectType;
@@ -126,7 +127,12 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
               <tr>
                 <th scope="row">Object Representation</th>
                 <td className="w-75 text-break">
-                  {displayBytes(bytes, bytesDisplayOpt)}
+                  <HexEditor
+                    data={asArrayBuffer(bytes)}
+                    offsetBase={2}
+                    dataBase={2}
+                    bytesPerLine={4}
+                  />
                 </td>
               </tr>
               <tr>
@@ -137,7 +143,7 @@ const TemporaryObject: React.FC<TemporaryObjectProps> = ({ data, isLast }) => {
           </table>
           <br />
           <div className="p-1">
-            {visualizeObject(typeInfo, bytes, useContext(EndiannessContext))}
+            {visualizeObject(typeInfo, bytes, useContext(EndiannessContext), 0)}
           </div>
         </div>
       </div>

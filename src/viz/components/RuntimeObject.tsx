@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useId, useRef } from "react";
-import { decimalAddressToHex, displayBytes } from "../../utils/utils";
+import { asArrayBuffer, decimalAddressToHex } from "../../utils/utils";
 import { RuntimeObject as RuntimeObjectType } from "c-viz/lib/interpreter/object";
 import {
   getTypeName,
@@ -19,6 +19,8 @@ import {
 } from "../../App";
 import { SHRT_ALIGN } from "c-viz/lib/constants";
 import { Tooltip } from "bootstrap";
+import { HexEditor } from "hex-editor-react";
+import "hex-editor-react/dist/hex-editor.css";
 
 interface RuntimeObjectProps {
   data: RuntimeObjectType;
@@ -161,7 +163,13 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
               <tr>
                 <th scope="row">Object Representation</th>
                 <td className="w-75 text-break">
-                  {displayBytes(bytes, bytesDisplayOpt)}
+                  {/* TODO: fix this "row is undefined" */}
+                  <HexEditor
+                    data={asArrayBuffer(bytes)}
+                    offsetBase={2}
+                    dataBase={2}
+                    bytesPerLine={4}
+                  />
                 </td>
               </tr>
               <tr>
@@ -172,7 +180,7 @@ const RuntimeObject: React.FC<RuntimeObjectProps> = ({ data }) => {
           </table>
           <br />
           <div className="p-1">
-            {visualizeObject(typeInfo, bytes, endianness)}
+            {visualizeObject(typeInfo, bytes, endianness, address)}
           </div>
         </div>
       </div>

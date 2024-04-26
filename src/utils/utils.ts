@@ -108,3 +108,10 @@ export function displayBytes(
     .map((i) => i.toString(base).toUpperCase().padStart(padding, "0"))
     .join(sep);
 }
+
+export function asArrayBuffer(bytes: number[]) {
+  const res = new Uint8Array(bytes.length);
+  res.set(bytes, 0);
+  console.log(bytes, res);
+  return res;
+}

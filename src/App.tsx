@@ -47,13 +47,14 @@ const SAMPLES_DIR = "samples/";
 const samples: string[] = [
   "assign.c",
   "blocks.c",
+  "cond.c",
   "forward-decl.c",
   "heap.c",
   "linked-list.c",
   "loops.c",
   "strict-aliasing.c",
-  "struct.c",
   "struct-init.c",
+  "struct.c",
   "uninit.c",
 ];
 
