@@ -1,6 +1,7 @@
 int main() {
     int a ;
     for (a = 0; a < 10; a = a + 1) {
+        print(a);
         if (a % 2) {
             int b = 3;
             break;
