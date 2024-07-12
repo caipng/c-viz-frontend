@@ -545,16 +545,112 @@ function App() {
 
   return (
     <>
-      <div className="container text-center">
-        <br />
-        <h1 className="display-1">
-          <img src="c-logo.png" alt="C" height="80px" />
-          <small className="ms-1 text-body-secondary">viz</small>
-        </h1>
-        <br />
+      <div className="container-fluid shadow-sm bg-light">
+        <nav className="navbar">
+          <div className="container text-center">
+            <div>
+              <h1 className="display-1 mt-2 mb-4 lobster-regular">
+                <img src="c-logo.png" alt="C" height="80px" />
+                <small className="ms-2 text-primary-emphasis">viz</small>
+              </h1>
+            </div>
+            <div className="card mt-3">
+              <div className="card-body d-flex justify-content-evenly py-2">
+                <table
+                  className="table table-borderless mb-0"
+                  style={{ width: 200 }}
+                >
+                  <tbody>
+                    <tr>
+                      <td className="py-0 text-end">frontend:</td>
+                      <td className="py-0 text-start">
+                        <a
+                          href="https://github.com/caipng/c-viz-frontend"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                        >
+                          repo
+                        </a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table
+                  className="table table-borderless mb-0"
+                  style={{ width: 200 }}
+                >
+                  <tbody>
+                    <tr>
+                      <td className="py-0 text-end">backend:</td>
+                      <td className="py-0 text-start">
+                        <a
+                          href="https://github.com/caipng/c-viz"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                        >
+                          repo
+                        </a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table
+                  className="table table-borderless mb-0"
+                  style={{ width: 200 }}
+                >
+                  <tbody>
+                    <tr>
+                      <td className="py-0 text-end">dissertation:</td>
+                      <td className="py-0 text-start">
+                        <a
+                          href="https://caipng.github.io/Kaian_FYP.pdf"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                        >
+                          pdf
+                        </a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <table
+                  className="table table-borderless mb-0"
+                  style={{ width: 200 }}
+                >
+                  <tbody>
+                    <tr>
+                      <td className="py-0 text-end">specs:</td>
+                      <td className="py-0 text-start">
+                        <a
+                          href="https://caipng.github.io/c-viz_specs.pdf"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                        >
+                          pdf
+                        </a>
+                        <span className="text-body-secondary px-2">|</span>
+                        <a
+                          href="https://github.com/caipng/Specification-of-c-viz"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+                        >
+                          src
+                        </a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </nav>
       </div>
       <div className="container-fluid" id="container">
-        <hr />
         <div className="row g-1 my-5">
           <div className="col-4">
             <CodeMirror
@@ -1102,6 +1198,8 @@ function App() {
         <footer className="py-3 my-4">
           <p className="text-center text-body-secondary">
             Made with <i className="bi bi-heart-fill"></i>
+            <br />
+            v0.1.2
           </p>
         </footer>
       </div>
