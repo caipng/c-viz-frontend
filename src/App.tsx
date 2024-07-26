@@ -458,6 +458,10 @@ function App() {
       instance.current?.repaintEverything();
     });
 
+    window.addEventListener('resize', () => {
+      instance.current?.repaintEverything();
+    });
+
     const heapList = document.getElementById("heap-list");
     if (heapList)
       listManager.current.addList(heapList, {
