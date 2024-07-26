@@ -413,12 +413,17 @@ function App() {
 
     const canvas = document.getElementById("canvas");
     if (!canvas) throw new Error("canvas not found");
+    
+    if (!instance.current) {
+      instance.current = newInstance({
+        container: canvas,
+        elementsDraggable: false,
+      });
+    }
 
-    instance.current = newInstance({
-      container: canvas,
-      elementsDraggable: false,
-    });
-    listManager.current = new JsPlumbListManager(instance.current);
+    if (!listManager.current) {
+      listManager.current = new JsPlumbListManager(instance.current);
+    }
 
     const textList = document.getElementById("text-list");
     if (textList)
@@ -478,6 +483,7 @@ function App() {
 
     return () => {
       p.current?.disable();
+      instance.current?.select().deleteAll();
       if (t) t.disable();
     };
   }, []);
